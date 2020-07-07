@@ -7,17 +7,18 @@
             </el-col>
             <el-col :span="12" class="header-center">
                 <div class="grid-content">
-                    <a href="">
+                    <router-link to="/system/systemCase" :class="$router.path=='/system/systemCase'?'active':''">
                         案件库管理
                         <span></span>
-                    </a>
-                    <a href="">摄像头管理</a>
-                    <a href="">用户管理</a>
+                    </router-link>
+                    <router-link to="/system/systemCamera" :class="$router.path=='/system/systemCamera'?'active':''">摄像头管理<span></span></router-link>
+                    <router-link to="/system/systemUser" :class="$router.path=='/system/systemUser'?'active':''">用户管理<span></span></router-link>
                 </div>
             </el-col>
             <el-col :span="6">333</el-col>
             </el-row>
         </header>
+        <router-view></router-view>
     </div>
 </template>
 <script>
@@ -50,12 +51,29 @@ header .el-row{
     margin: 0 auto;
 }
 .header-center a{
+    display: inline-block;
+    position: relative;
     color: #fff;
     text-decoration: none;
     color: rgb(182, 182, 182);
     font-size: 14px;
     margin-right: 20px;
     line-height: 60px;
+}
+.grid-content .active{
+    color: #fff;
+}
+.grid-content a>span{
+    position: absolute;
+    bottom: 5px;
+    left:32px;
+    width: 8px;
+    height: 8px;
+    background: #fff;
+    border-radius: 50%;
+}
+.grid-content a:last-child>span{
+    left:22px;
 }
 </style>
 
