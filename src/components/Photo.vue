@@ -11,9 +11,12 @@
     <div v-if="imgSrc" class="img_bg_camera">
       <img :src="imgSrc" alt class="tx_img" />
     </div>
+    <div class="btn_box">
     <button @click="getCompetence()">打开摄像头</button>
     <button @click="stopNavigator()">关闭摄像头</button>
     <button @click="setImage()" style="position:relative;">拍照</button>
+    </div>
+    
   </div>
 </template>
 <script>
@@ -336,6 +339,17 @@
     video {
       position: relative;
       top: -40px;
+    }
+    .btn_box{
+      text-align: center;
+      button{
+        border:none;
+        outline: none;
+        border:1px solid #0d6690;
+        background-color: #0d2843;
+        padding: 5px;
+        color: #bfdfef;
+      }
     }
     .camera_addr {
       position: absolute;
