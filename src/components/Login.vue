@@ -79,8 +79,9 @@ export default {
       app.$http.post("/api/login", data).then(function(response) {
           // console.log(response.data);
             if(response.data.status === 0){
-              console.log(response.data);
+              
               window.localStorage.setItem("userToken", response.data.result.token);
+              console.log(response.data.result.token);
               if(response.data.result.user_type==1){
                 // console.log('管理员');
                 app.$router.push('/system/systemCase')
