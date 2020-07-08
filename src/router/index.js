@@ -2,9 +2,14 @@ import Vue from 'vue'
 import Router from 'vue-router'
 import Login from '@/components/Login.vue'
 import System from '@/components/System.vue'
+<<<<<<< HEAD
 import SystemCase from '@/components/SystemCase.vue'
 import SystemCamera from '@/components/SystemCamera.vue'
 import SystemUser from '@/components/SystemUser.vue'
+=======
+import Monitor from '@/components/Monitor.vue'
+import Securityscreen from "@/components/Securityscreen.vue"
+>>>>>>> ljp
 
 import Monitor from '@/components/Monitor.vue'
 Vue.use(Router)
@@ -44,6 +49,11 @@ export default new Router({
       path: '/monitor',
       name: 'Monitor',
       component: Monitor
+    },
+    {
+      path:"/securityscreen",
+      name:"securityscreen",
+      component:Securityscreen
     }
   ]
 })
