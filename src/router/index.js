@@ -20,11 +20,6 @@ export default new Router({
       name: 'System',
       component: System,
       children:[{
-        path: '/',
-				component: SystemCase,
-				name: 'SystemCase',
-				meta: { requiresAuth: true }
-      },{
         path: 'systemCase',
 				component: SystemCase,
 				name: 'SystemCase',

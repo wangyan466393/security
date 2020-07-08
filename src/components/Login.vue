@@ -49,8 +49,8 @@ export default {
             this.password = password
             this.remember = true
         }
-        console.log(this.username)
-        console.log(this.password)
+        // console.log(this.username)
+        // console.log(this.password)
     },
   methods:{
     // 储存表单信息
@@ -83,7 +83,7 @@ export default {
               window.localStorage.setItem("userToken", response.data.result.token);
               if(response.data.result.user_type==1){
                 // console.log('管理员');
-                app.$router.push('/system')
+                app.$router.push('/system/systemCase')
               }else if(response.data.result.user_type==2){
                 // console.log('普通');
                 app.$router.push('/monitor')
