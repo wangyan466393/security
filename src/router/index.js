@@ -5,7 +5,7 @@ import System from '@/components/System.vue'
 import SystemCase from '@/components/SystemCase.vue'
 import SystemCamera from '@/components/SystemCamera.vue'
 import SystemUser from '@/components/SystemUser.vue'
-
+import Securityscreen from '@/components/Securityscreen.vue'
 import Monitor from '@/components/Monitor.vue'
 Vue.use(Router)
 
