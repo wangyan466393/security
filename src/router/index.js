@@ -39,6 +39,11 @@ export default new Router({
       path: '/monitor',
       name: 'Monitor',
       component: Monitor
+    },
+    {
+      path:"/securityscreen",
+      name:"securityscreen",
+      component:Securityscreen
     }
   ]
 })

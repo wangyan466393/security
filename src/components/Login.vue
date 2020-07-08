@@ -63,11 +63,11 @@ export default {
                 // base64加密密码
                 let password = Base64.encode(this.password)
                 this.setCookie("password",password);
-                this.setCookie("remember",this.remember)    
+                this.setCookie("remember",this.remember)
             }else{
                 this.setCookie("username","")
-                this.setCookie("password","") 
-            } 
+                this.setCookie("password","")
+            }
         },
      // 执行用户登录操作
     dologin:function() {
@@ -86,16 +86,16 @@ export default {
                 app.$router.push('/system/systemCase')
               }else if(response.data.result.user_type==2){
                 // console.log('普通');
-                app.$router.push('/monitor')
+                app.$router.push('/securityscreen')
               }
               // 储存登录信息
-                app.setUserInfo()  
+                app.setUserInfo()
           }else{
             alert("对不起账号密码错误请重新输入。。")
-          }          
+          }
         });
     },
-    
+
     // 获取cookie
         getCookie: function (key) {
             if (document.cookie.length > 0) {
@@ -133,7 +133,7 @@ export default {
 }
 .login .logo{
   margin-left:96px;
-  margin-top: 42px; 
+  margin-top: 42px;
 }
 .login .logo>img{
   height: 35px;
