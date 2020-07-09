@@ -204,6 +204,7 @@ input.pwd{
   line-height: 30px;
   text-align: center;
   font-size: 14px;
+  cursor: pointer;
 }
 footer{
   color: #fff;

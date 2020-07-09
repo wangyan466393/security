@@ -15,7 +15,10 @@
                 <el-table-column
                     prop="map_location"
                     label="定位信息"
-                    width="180">
+                    width="120">
+                    <template slot-scope="scope">
+                        {{scope.row.map_location|toMapLocation}}
+                    </template>
                 </el-table-column>
                 <el-table-column
                     label="状态"
@@ -44,6 +47,17 @@ export default {
           cameraData: [],
         }
       },
+    filters:{
+        toMapLocation:function(str){
+            var arr=str.split(",");
+            for(var i=0;i<arr.length;i++){
+                arr[i]=Math.round(arr[i]); 
+            }
+            arr[0]=arr[0]+'N';
+            arr[1]=arr[1]+'E';
+            return  arr.toString();
+        }
+    },
     methods:{
         formatDate(row, column) {
                 // 获取单元格数据
