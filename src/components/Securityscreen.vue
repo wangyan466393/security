@@ -45,7 +45,7 @@
       </el-header>
       <el-container style="padding:25px 25px 0px;">
         <el-main style="margin-right:20px">
-          <photo ref="myphoto" v-on:zifu="hehe"></photo>
+          <photo ref="myphoto" v-on:zifu="hehe" :posAddr="posAddr"></photo>
         </el-main>
         <el-aside width="450px">
           <el-row>
@@ -90,7 +90,7 @@
                   </ul>
                 </h5>
                 <div class="suspect_map">
-                  <live-map></live-map>
+                  <live-map @positionAddr="posAddrs" ref="livemap"></live-map>
                 </div>
               </div>
             </el-col>
@@ -117,7 +117,8 @@ export default {
       userToken:"", 
       username:"",
       // 疑犯信息
-      suspectInfo: []
+      suspectInfo: [],
+      posAddr:""
     };
   },
   components: {
@@ -161,6 +162,13 @@ export default {
         (this.confidence = data.confidence);
 
       this.escapedInfo();
+    },
+    posAddrs(data){   // 接收子组件传过来的定位地址
+        console.log(data)
+        this.posAddr = data;
+    },
+    updatePositionAddr(){
+
     },
     //获取在逃疑犯数据
     escapedInfo() {
