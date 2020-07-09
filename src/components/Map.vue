@@ -1,6 +1,6 @@
 <template>
   <div class="amap-page-container" id="amap-page-container">
-    <el-amap vid="amapDemo" :zoom="zoom" :center="center" :events="events" class="amap-demo">
+    <el-amap vid="amapDemo" :zoom="zoom" :plugin="plugin" :center="center" :events="events" class="amap-demo">
       <!-- <el-amap-marker
         vid="component-marker"
         :position="componentMarker.position"
@@ -18,23 +18,21 @@
     </el-amap>
     <div class="toolbar">
       <p>显示文本内容：</p>
-      <p>position: [{{ lng }}, {{ lat }}] address: {{ ruleForm.address }}</p>
+      <p>position: [{{ lng }}, {{ lat }}] address: {{ address }}</p>
     </div>
   </div>
 </template>
 <script>
+import bus from "../eventBus";
 export default {
   name: "amap-page",
   data() {
     let self = this;
     return {
-      ruleForm: {
         //保存获取到的 经纬度
-        address: ""
-      },
+      address: "",
       lng: 0, //经度纬度
       lat: 0, //经度纬度
-      // count: 1,
       // slotStyle: {
       //   padding: "2px 8px",
       //   background: "#eee",
@@ -59,8 +57,10 @@ export default {
               geocoder.getAddress([lng, lat], function(status, result) {
                 if (status === "complete" && result.info === "OK") {
                   if (result && result.regeocode) {
-                    self.ruleForm.address = result.regeocode.formattedAddress;
-                    self.$nextTick();
+                    self.address = result.regeocode.formattedAddress;
+                    self.$nextTick( function(){
+                          self.emitEvent()
+                      });
                   }
                 }
               });
@@ -89,11 +89,17 @@ export default {
               geocoder.getAddress([lng, lat], function(status, result) {
                 if (status === "complete" && result.info === "OK") {
                   if (result && result.regeocode) {
-                    self.ruleForm.address = result.regeocode.formattedAddress;
-                    self.$nextTick();
+                    self.address = result.regeocode.formattedAddress;
+                    self.$nextTick(
+                      function(){
+                          self.emitEvent()
+                      }
+                    );
+                    
                   }
                 }
               });
+              
             },
             dragend: e => {
               console.log("---event---: dragend");
@@ -131,15 +137,43 @@ export default {
           geocoder.getAddress([lng ,lat], function(status, result) {
             if (status === 'complete' && result.info === 'OK') {
               if (result && result.regeocode) {
-                self.ruleForm.address = result.regeocode.formattedAddress;
+                self.address = result.regeocode.formattedAddress;
                 self.$nextTick();
               }
             }
           });
         }
       },
+      plugin: [{
+            pName: 'Geolocation',
+            events: {
+              init(o) {
+                // o 是高德地图定位插件实例
+                o.getCurrentPosition((status, result) => {
+                  if (result && result.position) {
+                    console.log(result.formattedAddress)
+                    self.lng = result.position.lng;
+                    self.lat = result.position.lat;
+                    self.center = [self.lng, self.lat];
+                    self.address = result.formattedAddress;
+                    self.loaded = true;
+                    self.$nextTick(function(){
+                          self.emitEvent()
+                      });
+                  }
+                });
+              },
+              
+            }
+          }]
     };
-  }
+  },
+  methods:{
+			emitEvent(){
+        console.log(this.address)
+				this.$emit("positionAddr",this.address)
+			}
+		},
 };
 </script>
 <style scoped>
