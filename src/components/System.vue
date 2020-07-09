@@ -108,7 +108,7 @@ header .el-row{
     padding: 30px;
     margin: 38px auto;
     background: #fff;
-    border-radius: 2px 2px 2px #eee;
+    box-shadow: 2px 2px 2px #eee;
 }
 </style>
 
