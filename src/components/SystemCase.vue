@@ -1,6 +1,6 @@
 <template>
   <div style="position:relative">
-    <el-tabs type="border-card">
+    <el-tabs type="border-card" @tab-click="tab_add">
       <el-tab-pane label="在逃犯管理">
         <template>
           <el-table :data="fugitiveData" style="width: 100%">
@@ -60,25 +60,25 @@
       title="新增在逃犯"
       width="500"
       trigger="manual"
-      content="这是一段内容,这是一段内容,这是一段内容,这是一段内容。"
+      content=""
       v-model="visible"
+      v-if="tab_index == 0"
     >
       <el-row>
-        <el-col :span="8">
+        <el-col :span="8" style="margin-top: 50px;">
             <div style="text-align:center;">
                 <img class="escapeImg" :src="imageUrl" alt  />
-                <p>嫌犯照片</p>
+                <p class="img_title">嫌犯照片</p>
             </div>
-          
-          <div>
+          <div class="file">
+              上传
             <input type="file" name="pic" ref="imgInput" @change="saveSrc()" />
           </div>
-          <el-button type="primary" round style="padding: 8px 17px;">上传</el-button>
         </el-col>
         <el-col :span="16">
           <el-form :label-position="labelPosition" label-width="100px" :model="formLabelAlign">
             <el-form-item label="姓名：">
-              <el-input v-model="formLabelAlign.name"></el-input>
+              <el-input v-model="formLabelAlign.name" clearable></el-input>
             </el-form-item>
             <el-form-item label="性别：">
                 <el-radio-group v-model="formLabelAlign.resource">
@@ -87,7 +87,7 @@
                 </el-radio-group>
             </el-form-item>
             <el-form-item label="身份证号：">
-              <el-input v-model="formLabelAlign.region"></el-input>
+              <el-input v-model="formLabelAlign.region" clearable></el-input>
             </el-form-item>
             <el-form-item label="案件类型：">
               <el-input v-model="formLabelAlign.type"></el-input>
@@ -108,8 +108,8 @@
                 <el-radio label="已报警"></el-radio>
                 </el-radio-group>
             </el-form-item>
-            <el-form-item>
-            <el-button type="primary" @click="onSubmit">确定</el-button>
+            <el-form-item style="text-align:right;">
+            <el-button type="primary" @click="onSubmit" style="padding: 8px 20px;">确定</el-button>
         </el-form-item>
           </el-form>
         </el-col>
@@ -120,6 +120,77 @@
         @click="visible = !visible"
         round
         style="position: absolute;right: 100px;top: 12px;padding: 8px 17px;"
+        icon="el-icon-plus"
+      >新增</el-button>
+    </el-popover>
+
+    <!-- 新增被偷车辆 -->
+    <el-popover
+      placement="bottom"
+      title="新增被偷车辆"
+      width="500"
+      trigger="manual"
+      content=""
+      v-model="visible"
+      v-if="tab_index == 1"
+    >
+      <el-row>
+        <el-col :span="8" style="margin-top: 50px;">
+            <div style="text-align:center;">
+                <img class="escapeImg" :src="imageUrl" alt  />
+                <p class="img_title">嫌犯照片</p>
+            </div>
+          <div class="file">
+              上传
+            <input type="file" name="pic" ref="imgInput" @change="saveSrc()" />
+          </div>
+        </el-col>
+        <el-col :span="16">
+          <el-form :label-position="labelPosition" label-width="100px" :model="formLabelAlign">
+            <el-form-item label="姓名：">
+              <el-input v-model="formLabelAlign.name" clearable></el-input>
+            </el-form-item>
+            <el-form-item label="性别：">
+                <el-radio-group v-model="formLabelAlign.resource">
+                <el-radio label="男"></el-radio>
+                <el-radio label="女"></el-radio>
+                </el-radio-group>
+            </el-form-item>
+            <el-form-item label="身份证号：">
+              <el-input v-model="formLabelAlign.region" clearable></el-input>
+            </el-form-item>
+            <el-form-item label="案件类型：">
+              <el-input v-model="formLabelAlign.type"></el-input>
+            </el-form-item>
+            <el-form-item label="逃离时间：">
+                <el-col :span="11">
+                <el-date-picker type="date" placeholder="选择日期" v-model="formLabelAlign.date1" style="width: 100%;"></el-date-picker>
+                </el-col>
+                <el-col class="line" :span="2">-</el-col>
+                <el-col :span="11">
+                <el-time-picker placeholder="选择时间" v-model="formLabelAlign.date2" style="width: 100%;"></el-time-picker>
+                </el-col>
+            </el-form-item>
+            <el-form-item label="当前状态：">
+                <el-radio-group v-model="formLabelAlign.status">
+                <el-radio label="在逃"></el-radio>
+                <el-radio label="结案"></el-radio>
+                <el-radio label="已报警"></el-radio>
+                </el-radio-group>
+            </el-form-item>
+            <el-form-item style="text-align:right;">
+            <el-button type="primary" @click="onSubmit" style="padding: 8px 20px;">确定</el-button>
+        </el-form-item>
+          </el-form>
+        </el-col>
+      </el-row>
+      <el-button
+        type="primary"
+        slot="reference"
+        @click="visible = !visible"
+        round
+        style="position: absolute;right: 100px;top: 12px;padding: 8px 17px;"
+        icon="el-icon-plus"
       >新增</el-button>
     </el-popover>
   </div>
@@ -133,6 +204,7 @@ export default {
       fugitiveData: [],
       // 被偷车辆数据
       stolenCarData: [],
+      tab_index:0,
       visible: false,
       labelPosition: "right",
       formLabelAlign: {
@@ -174,6 +246,10 @@ export default {
     });
   },
   methods: {
+      tab_add(targetName){
+          console.log(targetName.index)
+        this.tab_index = targetName.index
+      },
     //方法区
     formatDate(row, column) {
       // 获取单元格数据
@@ -247,6 +323,9 @@ export default {
 .el-table tr:first-child th {
   padding: 0;
 }
+.el-popover{
+    left: 650px !important;
+}
 .escapeImg{
     margin: auto;
     display: block;
@@ -254,15 +333,54 @@ export default {
     height: 150px;
     border: 1px dashed #ccc;
     border-radius: 5px;
-    background: #ececec url(../images/ljp_photo.png) no-repeat center;
+    background: #f9f9f9 url(../images/ljp_photo.png) no-repeat center;
     background-size: 90%;
 }
-.el-input{
-    height: 35px;
-    line-height: 35px;
-    background-color: #ececec;
+.img_title{
+    margin-top: 10px;
+    margin-bottom: 25px;
+    letter-spacing: 3px;
+    font-weight: 600;
 }
-.el-form-item__content{
-    text-align: right;
+.el-input input{
+    height: 32px;
+    line-height: 32px;
+    background-color: #f9f9f9;
+    border: none;
+}
+
+.el-form-item {
+    margin-bottom: 10px;
+}
+.file {
+    position: relative;
+    left: 50%;
+    margin-left: -37px;
+    display: inline-block;
+    background: #409EFF;
+    border: 1px solid #99D3F5;
+    border-radius: 28px;
+    padding: 6px 20px;
+    overflow: hidden;
+    color: #FFF;
+    text-decoration: none;
+    text-indent: 0;
+    line-height: 20px;
+    
+}
+.file input {
+    position: absolute;
+    font-size: 100px;
+    right: 0;
+    top: 0;
+    opacity: 0;
+    cursor: pointer;
+}
+.popper__arrow{
+    left: 490px !important;
+}
+.el-popover__title{
+    color: #409EFF;
+    font-weight: 600;
 }
 </style>
