@@ -22,7 +22,7 @@
 <script>
   import bus from "../eventBus";
   import axios from "axios";
-
+import { Base64 } from 'js-base64';
   //把axios实例对象作为Vue原型链prototype对象的某一个属性
 
   export default {
@@ -286,10 +286,14 @@
                         });
                       } else if (pre[j] == "vehicle" || pre[j] == "car") {
                         console.log("汽车");
-                         that.$http.put("/api/stolen_car_detection",{
-                           token: window.localStorage.getItem("userToken"),
-                           car_img:that.base64Code
-                         }).then(function(response){
+                         that.$http.post("/api/stolen_car_detection",{
+                           car_img:Base64.encodeURI(that.base64Code),
+                           },
+                           
+                           {params:{
+                             token: window.localStorage.getItem("userToken"),
+                           }
+                         },).then(function(response){
                            console.log(response);
                          })
                       }

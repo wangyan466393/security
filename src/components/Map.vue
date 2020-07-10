@@ -19,6 +19,7 @@
     <div class="toolbar">
       <p>显示文本内容：</p>
       <p>position: [{{ lng }}, {{ lat }}] address: {{ address }}</p>
+      {{ cameraInfos }}
     </div>
   </div>
 </template>
@@ -26,9 +27,11 @@
 import bus from "../eventBus";
 export default {
   name: "amap-page",
+  props:["cameraInfos"],
   data() {
     let self = this;
     return {
+    
         //保存获取到的 经纬度
       address: "",
       lng: 0, //经度纬度

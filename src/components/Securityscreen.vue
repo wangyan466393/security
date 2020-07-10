@@ -13,18 +13,10 @@
                 <span style="font-size:12px;color:#a4daf2">INTELLIGENT SECURITY SYSTEM</span>
               </div>
               <div class="select_right">
-                <!-- <i class="el-icon-s-home">
-
-                </i>-->
-                <span class="camera">摄像头选择</span>
-                <!-- <el-select v-model="value" placeholder="请选择">
-                  <el-option
-                    v-for="item in options"
-                    :key="item.value"
-                    :label="item.label"
-                    :value="item.value">
-                  </el-option>
-                </el-select>-->
+                <span class="camera" :title="selectedCamera"> {{ selectedCamera }}</span>
+                <ul class="camera_list" @click="selectCamera($event)">
+                    <li v-for="(info,index) in cameraInfos" :key="index" :data-addr="info.address">{{ info.device_name }}</li>
+                  </ul>
               </div>
             </div>
           </el-col>
@@ -90,7 +82,7 @@
                   </ul>
                 </h5>
                 <div class="suspect_map">
-                  <live-map @positionAddr="posAddrs" ref="livemap"></live-map>
+                  <live-map @positionAddr="posAddrs" ref="livemap" :cameraInfos="cameraInfos"></live-map>
                 </div>
               </div>
             </el-col>
@@ -98,6 +90,7 @@
         </el-aside>
       </el-container>
     </el-container>
+    
   </div>
 </template>
 
@@ -109,6 +102,7 @@ export default {
   name: "securityscreen",
   data() {
     return {
+      selectedCamera:"摄像头选择",
       date: new Date(),
       imgSrc: "", //疑犯拍摄
       image_src: "", //子组件发送过来的 疑犯文件base64
@@ -118,7 +112,8 @@ export default {
       username:"",
       // 疑犯信息
       suspectInfo: [],
-      posAddr:""
+      posAddr:"",
+      cameraInfos:[],   //摄像头信息
     };
   },
   components: {
@@ -128,6 +123,7 @@ export default {
   created() {
     this.checkCookie();
     this.userToken = window.localStorage.getItem("userToken");
+    
   },
   mounted() {
     let _this = this; // 声明一个变量指向Vue实例this，保证作用域一致
@@ -136,8 +132,22 @@ export default {
     }, 1000);
     //开启摄像头
     this.$refs.myphoto.getCompetence();
+    this.getCamera()
   },
   methods: {
+    selectCamera(e){
+        console.log(e.target.dataset.addr)
+        this.selectedCamera = e.target.innerText
+        this.posAddr = e.target.dataset.addr
+    },
+    //获取摄像头信息
+    getCamera(){
+      let that = this;
+      this.$http.get("/api/camer_devices",{params:{token:that.userToken}}).then(function(response){
+          console.log(response);
+          that.cameraInfos = response.data;
+      })
+    },
     getCookie: function(cname) {
       var name = cname + "=";
       var ca = document.cookie.split(";");
@@ -166,9 +176,6 @@ export default {
     posAddrs(data){   // 接收子组件传过来的定位地址
         console.log(data)
         this.posAddr = data;
-    },
-    updatePositionAddr(){
-
     },
     //获取在逃疑犯数据
     escapedInfo() {
@@ -286,13 +293,12 @@ export default {
   background: url(../images/highlight.png) no-repeat -5px -23px;
 }
 .select_right {
+  position: relative;
   float: right;
   margin-top: 14px;
   margin-right: 45px;
   width: 180px;
   height: 65px;
-  text-align: center;
-  line-height: 45px;
   background: url(../images/select01.png) no-repeat 0px 0px;
   background-size: 100%;
 }
@@ -304,14 +310,48 @@ export default {
 }
 .camera {
   margin-left: 26px;
-  padding: 3px 23px;
+  display: inline-block;
+    height: 44px;
+    width: 112px;
+    line-height: 46px;
+  padding: 0px 23px;
   color: #d1f5f6;
   font-weight: 600;
   letter-spacing: 3px;
-  background: url(../images/home_ljp.png) no-repeat 0px 0px;
+  background: url(../images/home_ljp.png) no-repeat 0px center;
   background-size: 20px;
   cursor: pointer;
   font-size: 14px;
+  white-space:nowrap;
+  overflow:hidden;
+  text-overflow:ellipsis;
+}
+.select_right:hover .camera_list{
+  display: block;
+}
+.camera_list{
+  display: none;
+  padding-top: 15px;
+  padding-bottom: 20px;
+  list-style: none;
+  position: absolute;
+  top: 62px;
+  z-index: 3000;
+  background: url(../images/ljp_list.png) no-repeat 0 0;
+  background-size: 100%;
+  width: 178px;
+  text-align: center;
+}
+.camera_list li{
+  line-height: 34px;
+  color:#daffff;
+  font-size: 14px;
+ 
+}
+.camera_list li:hover{
+  background: url(../images/ljp_li.png) no-repeat 0 0;
+  background-size: 100%;
+   cursor: pointer;
 }
 .current_time {
   margin-left: 40px;
@@ -417,4 +457,6 @@ export default {
   font-weight: 700;
   line-height: 2;
 }
+
+
 </style>
