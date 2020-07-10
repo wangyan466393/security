@@ -56,6 +56,7 @@
       </el-tab-pane>
     </el-tabs>
     <el-popover
+      popper-class="myPopover0"
       placement="bottom"
       title="新增在逃犯"
       width="500"
@@ -82,8 +83,8 @@
             </el-form-item>
             <el-form-item label="性别：">
                 <el-radio-group v-model="formLabelAlign.resource">
-                <el-radio label="男"></el-radio>
-                <el-radio label="女"></el-radio>
+                  <el-radio label="男"></el-radio>
+                  <el-radio label="女"></el-radio>
                 </el-radio-group>
             </el-form-item>
             <el-form-item label="身份证号：">
@@ -109,7 +110,7 @@
                 </el-radio-group>
             </el-form-item>
             <el-form-item style="text-align:right;">
-            <el-button type="primary" @click="onSubmit" style="padding: 8px 20px;">确定</el-button>
+            <el-button type="primary"  style="padding: 8px 20px;">确定</el-button>
         </el-form-item>
           </el-form>
         </el-col>
@@ -126,61 +127,54 @@
 
     <!-- 新增被偷车辆 -->
     <el-popover
+      popper-class="myPopover1"
       placement="bottom"
       title="新增被偷车辆"
-      width="500"
+      width="350"
       trigger="manual"
       content=""
       v-model="visible"
       v-if="tab_index == 1"
     >
       <el-row>
-        <el-col :span="8" style="margin-top: 50px;">
-            <div style="text-align:center;">
-                <img class="escapeImg" :src="imageUrl" alt  />
-                <p class="img_title">嫌犯照片</p>
-            </div>
-          <div class="file">
-              上传
-            <input type="file" name="pic" ref="imgInput" @change="saveSrc()" />
-          </div>
-        </el-col>
-        <el-col :span="16">
-          <el-form :label-position="labelPosition" label-width="100px" :model="formLabelAlign">
-            <el-form-item label="姓名：">
-              <el-input v-model="formLabelAlign.name" clearable></el-input>
+        <el-col :span="24">
+          <el-form :label-position="labelPosition" label-width="100px" :model="formstolenCar">
+            <el-form-item label="车牌号：">
+              <el-input v-model="formstolenCar.car_number" clearable></el-input>
             </el-form-item>
-            <el-form-item label="性别：">
-                <el-radio-group v-model="formLabelAlign.resource">
-                <el-radio label="男"></el-radio>
-                <el-radio label="女"></el-radio>
-                </el-radio-group>
+            <el-form-item label="颜色：">
+               <el-input v-model="formstolenCar.car_color" clearable></el-input>
             </el-form-item>
-            <el-form-item label="身份证号：">
-              <el-input v-model="formLabelAlign.region" clearable></el-input>
+            <el-form-item label="品牌：">
+              <el-input v-model="formstolenCar.car_model" clearable></el-input>
             </el-form-item>
-            <el-form-item label="案件类型：">
-              <el-input v-model="formLabelAlign.type"></el-input>
+            <el-form-item label="车主姓名：">
+              <el-input v-model="formstolenCar.owner_name"></el-input>
             </el-form-item>
-            <el-form-item label="逃离时间：">
-                <el-col :span="11">
-                <el-date-picker type="date" placeholder="选择日期" v-model="formLabelAlign.date1" style="width: 100%;"></el-date-picker>
-                </el-col>
-                <el-col class="line" :span="2">-</el-col>
-                <el-col :span="11">
-                <el-time-picker placeholder="选择时间" v-model="formLabelAlign.date2" style="width: 100%;"></el-time-picker>
+            <el-form-item label="车主身份证号：">
+              <el-input v-model="formstolenCar.owner_identify"></el-input>
+            </el-form-item>
+            <el-form-item label="被偷时间：">
+                <el-col :span="24">
+                <el-date-picker
+                  v-model="formstolenCar.stolenTime"
+                  type="datetime"
+                  :picker-options="pickerOptions"
+                   @change="pickStolenTime"
+                  placeholder="选择日期时间">
+                </el-date-picker>
                 </el-col>
             </el-form-item>
             <el-form-item label="当前状态：">
-                <el-radio-group v-model="formLabelAlign.status">
-                <el-radio label="在逃"></el-radio>
-                <el-radio label="结案"></el-radio>
-                <el-radio label="已报警"></el-radio>
+                <el-radio-group v-model="formstolenCar.status">
+                <el-radio  label="1">在逃</el-radio>
+                <el-radio  label="0">结案</el-radio>
+                <el-radio  label="2">已报警</el-radio>
                 </el-radio-group>
             </el-form-item>
             <el-form-item style="text-align:right;">
-            <el-button type="primary" @click="onSubmit" style="padding: 8px 20px;">确定</el-button>
-        </el-form-item>
+                <el-button type="primary" @click="addStolenCar" style="padding: 8px 20px;">确定</el-button>
+            </el-form-item>
           </el-form>
         </el-col>
       </el-row>
@@ -196,6 +190,7 @@
   </div>
 </template>
 <script>
+import qs from 'querystring';
 export default {
   name: "SystemCase",
   data() {
@@ -207,6 +202,7 @@ export default {
       tab_index:0,
       visible: false,
       labelPosition: "right",
+      // 在逃犯数据
       formLabelAlign: {
         name: "",
         region: "",
@@ -216,6 +212,22 @@ export default {
         date2:"",
         status:""
       },
+      // 被偷车辆数据
+      formstolenCar: {
+        car_number: "",
+        car_color: "",
+        car_model: "",
+        owner_name:"",
+        owner_identify:"",
+        stolenTime:"",
+        status:""
+      },
+      pickerOptions:{                                 //禁用当前日期之前的日期
+            disabledDate(time) {
+            //Date.now()是javascript中的内置函数，它返回自1970年1月1日00:00:00 UTC以来经过的毫秒数。
+                return time.getTime() > Date.now() - 8.64e7;
+            },
+        },
       imageUrl:""
     };
   },
@@ -232,22 +244,15 @@ export default {
           console.log(response.data);
           vm.fugitiveData = response.data;
         });
-      // 被偷车辆
-      vm.$http
-        .get("/api/stolen_cars", {
-          params: {
-            token: window.localStorage.getItem("userToken")
-          }
-        })
-        .then(function(response) {
-          console.log(response.data);
-          vm.stolenCarData = response.data;
-        });
+      
     });
+  },
+  created:function(){
+    this.getStolenCar()
   },
   methods: {
       tab_add(targetName){
-          console.log(targetName.index)
+          // console.log(targetName.index)
         this.tab_index = targetName.index
       },
     //方法区
@@ -303,6 +308,53 @@ export default {
         _this.imageUrl = reader.result;
       };
       this.uploadImgBtn();
+    },
+    getStolenCar(){
+      var app=this
+      // 被偷车辆
+      this.$http.get("/api/stolen_cars", {
+          params: {
+            token: window.localStorage.getItem("userToken")
+          }
+        })
+        .then(function(response) {
+          console.log(response.data);
+          app.stolenCarData = response.data;
+        });
+    },
+    // 被偷时间
+    // p为不够10添加0的函数
+    p(s) {
+          return s < 10 ? '0' + s : s
+    },
+    pickStolenTime(val){ 
+        const d = new Date(val)
+        const resDate = d.getFullYear() + '-' + this.p((d.getMonth() + 1)) + '-' + this.p(d.getDate())
+        const resTime = this.p(d.getHours()) + ':' + this.p(d.getMinutes()) + ':' + this.p(d.getSeconds())
+        this.formstolenCar.stolenTime=resDate+' '+resTime;
+    },
+    // 新增被偷车辆
+    addStolenCar(){
+      var app = this;
+      var data = qs.stringify({
+          car_number: this.formstolenCar.car_number,
+          car_color: this.formstolenCar.car_color,
+          car_model: this.formstolenCar.car_model,
+          owner_name: this.formstolenCar.owner_name,
+          owner_identify: this.formstolenCar.owner_identify,
+          stolen_time: this.formstolenCar.stolenTime,
+          status: this.formstolenCar.status
+      })
+      console.log(data);
+       app.$http.post("/api/stolen_cars", data,{
+         params: {
+            token: window.localStorage.getItem("userToken")
+          }
+       }).then(function(response) {
+          // console.log(response);
+          app.visible = false;
+          app.getStolenCar();
+       })
     }
   }
 };
@@ -323,8 +375,17 @@ export default {
 .el-table tr:first-child th {
   padding: 0;
 }
-.el-popover{
-    left: 650px !important;
+.el-popover.myPopover0{
+    left: 650px!important;
+}
+.el-popover.myPopover1{
+    left: 800px!important;
+}
+.el-popover.myPopover1 .el-form-item__label{
+  width: 120px!important;
+}
+.el-popover.myPopover1 .el-form-item__content{
+  margin-left:120px!important; 
 }
 .escapeImg{
     margin: auto;
@@ -376,8 +437,11 @@ export default {
     opacity: 0;
     cursor: pointer;
 }
-.popper__arrow{
+.el-popover.myPopover0 .popper__arrow{
     left: 490px !important;
+}
+.el-popover.myPopover1 .popper__arrow{
+    left: 340px !important;
 }
 .el-popover__title{
     color: #409EFF;

@@ -1,5 +1,37 @@
 <template>
-    <div>
+    <div style="position:realtive">
+        <el-popover
+        placement="bottom"
+        title="新增摄像头"
+        width="500"
+        trigger="manual"
+        content=""
+        v-model="visible"
+        >
+        <!--<el-row>
+             <el-col :span="8" style="margin-top: 50px;">
+                <div style="text-align:center;">
+                    <img class="escapeImg" :src="imageUrl" alt  />
+                </div>
+            </el-col>
+            <el-col :span="16">
+            <el-form :label-position="labelPosition" label-width="100px" :model="formLabelAlign">
+                
+                <el-form-item style="text-align:right;">
+                    <el-button type="primary"  style="padding: 8px 20px;">确定</el-button>
+                </el-form-item>
+            </el-form>
+            </el-col>
+        </el-row> -->
+        <el-button
+            type="primary"
+            slot="reference"
+            @click="visible = !visible"
+            round
+            style="position: absolute;right: 100px;top: 12px;padding: 8px 17px;"
+            icon="el-icon-plus"
+        >新增</el-button>
+    </el-popover>
         <template>
             <el-table :data="cameraData" style="float:left;width: 65%;min-width:806px;">
                 <el-table-column
@@ -53,6 +85,8 @@ export default {
         return {
             // 摄像头数据
           cameraData: [],
+          labelPosition: "right",
+          visible:false
         }
       },
     filters:{
