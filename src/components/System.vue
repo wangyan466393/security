@@ -109,6 +109,7 @@ header .el-row{
     margin: 38px auto;
     background: #fff;
     box-shadow: 2px 2px 2px #eee;
+    overflow: hidden;
 }
 </style>
 

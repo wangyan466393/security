@@ -6,7 +6,6 @@ import SystemCase from '@/components/SystemCase.vue'
 import SystemCamera from '@/components/SystemCamera.vue'
 import SystemUser from '@/components/SystemUser.vue'
 import Securityscreen from '@/components/Securityscreen.vue'
-import Monitor from '@/components/Monitor.vue'
 Vue.use(Router)
 
 export default new Router({
@@ -36,11 +35,6 @@ export default new Router({
 				meta: { requiresAuth: true }
       }]
     },{
-      path: '/monitor',
-      name: 'Monitor',
-      component: Monitor
-    },
-    {
       path:"/securityscreen",
       name:"securityscreen",
       component:Securityscreen
