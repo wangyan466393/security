@@ -1,7 +1,7 @@
 <template>
     <div>
         <template>
-            <el-table :data="cameraData" style="width: 65%;min-width:806px;">
+            <el-table :data="cameraData" style="float:left;width: 65%;min-width:806px;">
                 <el-table-column
                     prop="device_name"
                     label="名称"
@@ -35,12 +35,20 @@
                             >
                 </el-table-column>
             </el-table>
+            <div style="float:left;width:30%;margin-left:4%;">
+                <live-map ></live-map>
+            </div>
         </template>
+        
     </div>
 </template>
 <script>
+import LiveMap from "./Map.vue";
 export default {
     name:'SystemCamera',
+    components: {
+        LiveMap
+    },
     data() {
         return {
             // 摄像头数据
