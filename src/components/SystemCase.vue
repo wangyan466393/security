@@ -255,7 +255,7 @@ export default {
           // console.log(targetName.index)
         this.tab_index = targetName.index
       },
-    //方法区
+    //时间方法区
     formatDate(row, column) {
       // 获取单元格数据
       let data = row[column.property];
@@ -266,15 +266,15 @@ export default {
       return (
         dt.getFullYear() +
         "-" +
-        (dt.getMonth() + 1) +
+        this.p((dt.getMonth() + 1)) +
         "-" +
-        dt.getDate() +
+        this.p(dt.getDate()) +
         " " +
-        dt.getHours() +
+        this.p(dt.getHours()) +
         ":" +
-        dt.getMinutes() +
+        this.p(dt.getMinutes()) +
         ":" +
-        dt.getSeconds()
+        this.p(dt.getSeconds())
       );
     },
     // 上传缩略图
