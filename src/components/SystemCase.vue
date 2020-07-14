@@ -12,8 +12,8 @@
               <template slot-scope="scope" :show-overflow-tooltip="true">
                 <img
                   :src="'data:image/jpeg;base64,'+scope.row.person_img"
-                  width="50"
-                  height="33.35"
+                  width="45"
+                  height="50"
                   class="head_pic"
                 />
               </template>
@@ -79,38 +79,37 @@
         <el-col :span="16">
           <el-form :label-position="labelPosition" label-width="100px" :model="formLabelAlign">
             <el-form-item label="姓名：">
-              <el-input v-model="formLabelAlign.name" clearable></el-input>
+              <el-input v-model="formLabelAlign.person_name" clearable></el-input>
             </el-form-item>
             <el-form-item label="性别：">
-                <el-radio-group v-model="formLabelAlign.resource">
-                  <el-radio label="男"></el-radio>
-                  <el-radio label="女"></el-radio>
+                <el-radio-group v-model="formLabelAlign.gender">
+                  <el-radio label="男" ></el-radio>
+                  <el-radio label="女" ></el-radio>
                 </el-radio-group>
             </el-form-item>
             <el-form-item label="身份证号：">
-              <el-input v-model="formLabelAlign.region" clearable></el-input>
+              <el-input v-model="formLabelAlign.identity_id" clearable></el-input>
             </el-form-item>
             <el-form-item label="案件类型：">
-              <el-input v-model="formLabelAlign.type"></el-input>
+              <el-input v-model="formLabelAlign.case_type"></el-input>
             </el-form-item>
             <el-form-item label="逃离时间：">
-                <el-col :span="11">
-                <el-date-picker type="date" placeholder="选择日期" v-model="formLabelAlign.date1" style="width: 100%;"></el-date-picker>
-                </el-col>
-                <el-col class="line" :span="2">-</el-col>
-                <el-col :span="11">
-                <el-time-picker placeholder="选择时间" v-model="formLabelAlign.date2" style="width: 100%;"></el-time-picker>
-                </el-col>
+                  <el-date-picker
+                    style="width:233px"
+                    v-model="formLabelAlign.escapeTime"
+                    type="datetime"
+                    placeholder="选择日期时间">
+                  </el-date-picker>
             </el-form-item>
             <el-form-item label="当前状态：">
                 <el-radio-group v-model="formLabelAlign.status">
-                <el-radio label="在逃"></el-radio>
-                <el-radio label="结案"></el-radio>
-                <el-radio label="已报警"></el-radio>
+                <el-radio :label="1">在逃</el-radio>
+                <el-radio :label="0">结案</el-radio>
+                <el-radio :label="2">已报警</el-radio>
                 </el-radio-group>
             </el-form-item>
             <el-form-item style="text-align:right;">
-            <el-button type="primary"  style="padding: 8px 20px;">确定</el-button>
+            <el-button type="primary"  style="padding: 8px 20px;" @click="addEscapedPerson">确定</el-button>
         </el-form-item>
           </el-form>
         </el-col>
@@ -204,14 +203,14 @@ export default {
       labelPosition: "right",
       // 在逃犯数据
       formLabelAlign: {
-        name: "",
-        region: "",
-        type: "",
-        resource:"",
-        date1:"",
-        date2:"",
+        person_name: "",   
+        gender: "",    //性别
+        case_type: "",   //案件类型
+        identity_id:"",   //身份证号
+        escapeTime:"",   //在逃时间
         status:""
       },
+      
       // 被偷车辆数据
       formstolenCar: {
         car_number: "",
@@ -251,7 +250,52 @@ export default {
     this.getStolenCar()
   },
   methods: {
-      tab_add(targetName){
+    //新增疑犯
+    addEscapedPerson(){
+        var that = this;
+        var data = qs.stringify({
+          person_name: this.formLabelAlign.person_name,
+          gender: this.formLabelAlign.gender== "男" ? 1 : 2,
+          person_img: this.imageUrl.split(",")[1],
+          identity_id: this.formLabelAlign.identity_id,
+          case_type: this.formLabelAlign.case_type,
+          escape_time: this.dateFormat(this.formLabelAlign.escapeTime),
+          status: this.formLabelAlign.status
+      })
+        this.$http.post("/api/escape_persons",data,{params:{token: window.localStorage.getItem("userToken")}}).then(function(response){
+            console.log(response);
+            if (response.status == 201) {
+                that.$message({
+                  message: '新增在逃犯信息成功！',
+                  type: 'success'
+                });
+                that.visible = false;
+            }else{
+               this.$message.error('新增失败，请填写完整在逃犯信息！');
+            }
+        })
+    },
+    dateFormat(time) {
+      var date = new Date(time);
+      var year = date.getFullYear();
+      /* 在日期格式中，月份是从0开始的，因此要加0
+       * 使用三元表达式在小于10的前面加0，以达到格式统一  如 09:11:05
+       * */
+      var month =
+        date.getMonth() + 1 < 10
+          ? "0" + (date.getMonth() + 1)
+          : date.getMonth() + 1;
+      var day = date.getDate() < 10 ? "0" + date.getDate() : date.getDate();
+      var hours =
+        date.getHours() < 10 ? "0" + date.getHours() : date.getHours();
+      var minutes =
+        date.getMinutes() < 10 ? "0" + date.getMinutes() : date.getMinutes();
+      var seconds =
+        date.getSeconds() < 10 ? "0" + date.getSeconds() : date.getSeconds();
+      // 拼接
+      return year + "-" + month + "-" + day +" "+ hours + ":" + minutes + ":" + seconds;
+    },
+    tab_add(targetName){
           // console.log(targetName.index)
         this.tab_index = targetName.index
       },
@@ -270,30 +314,14 @@ export default {
         "-" +
         dt.getDate() +
         " " +
-        dt.getHours() +
+        dt.getHours()+
         ":" +
         dt.getMinutes() +
         ":" +
         dt.getSeconds()
       );
     },
-    // 上传缩略图
-    uploadImgBtn() {
-      let form = new FormData($("#form")[0]);
-      let _this = this;
-      this.$http({
-        url: "请求地址",
-        type: "post",
-        data: form,
-        dataType: "json",
-        processData: false,
-        contentType: false,
-        async: false,
-      }).then(function(response){
-        _this.form.picture = res.data;
-      });
-    },
-
+    
     // 保存图片路径为base64,这一步是为了完成预览功能
     saveSrc(e) {
       let file = this.$refs.imgInput.files[0];
@@ -307,7 +335,6 @@ export default {
       reader.onloadend = function() {
         _this.imageUrl = reader.result;
       };
-      this.uploadImgBtn();
     },
     getStolenCar(){
       var app=this
@@ -446,5 +473,9 @@ export default {
 .el-popover__title{
     color: #409EFF;
     font-weight: 600;
+}
+.el-icon-edit-outline{
+  font-size: 22px;
+  color: #409EFF;
 }
 </style>
