@@ -29,36 +29,39 @@
                         </el-table-column>
                         <el-table-column
                             label="操作"> 
-                             <a href="">操作</a>
+                             <a href="">删除</a>
                              <a href="">修改</a>
                         </el-table-column>
                     </el-table>
                 </template>
             </el-tab-pane>
         </el-tabs>
+        
         <el-popover
+           popper-class="myPopover"
             placement="bottom"
             title="新增用户"
-            width="200"
+            width="300"
             trigger="manual"
-            content="">
+            content=""
+            v-model="visible">
             <el-row>
-                <el-col :span="24">
+                <el-col :span="23">
                 <el-form :label-position="labelPosition" label-width="100px" :model="userinfo">
                     <el-form-item label="姓名：">
-                    <el-input v-model="userinfo.car_number" clearable></el-input>
+                    <el-input v-model="userinfo.username" clearable></el-input>
                     </el-form-item>
                     <el-form-item label="密码：">
-                    <el-input v-model="userinfo.car_color" clearable></el-input>
+                    <el-input v-model="userinfo.password" clearable></el-input>
                     </el-form-item>
-                    <el-form-item label="身份">
-                        <el-radio-group v-model="userinfo.status">
-                        <el-radio  label="1">在逃</el-radio>
-                        <el-radio  label="2">已报警</el-radio>
+                    <el-form-item label="身份：">
+                        <el-radio-group v-model="userinfo.user_type">
+                        <el-radio  label="1">管理员</el-radio>
+                        <el-radio  label="2">用  户</el-radio>
                         </el-radio-group>
                     </el-form-item>
                     <el-form-item style="text-align:right;">
-                        <el-button type="primary" @click="addStolenCar" style="padding: 8px 20px;">确定</el-button>
+                        <el-button type="primary" @click="addUser" style="padding: 8px 20px;">确定</el-button>
                     </el-form-item>
                 </el-form>
                 </el-col>
@@ -75,6 +78,7 @@
     </div>
 </template>
 <script>
+import qs from 'querystring';
 export default {
     name:'SystemUser',
     data(){
@@ -117,7 +121,7 @@ export default {
                 ":" +
                 this.p(dt.getSeconds())
             );
-            },
+        },
         tab_change(targetName){
           console.log(targetName.index)
           this.tab_index = targetName.index;
@@ -140,6 +144,24 @@ export default {
                 app.userinfoData = response.data;
             });
         },
+        addUser(){
+            var app = this;
+            var data = qs.stringify({
+                username: this.userinfo.username,
+                password: this.userinfo.password,
+                user_type: this.userinfo.user_type,
+            })
+            console.log(data);
+            app.$http.post("/api/userinfo", data,{
+                params: {
+                    token: window.localStorage.getItem("userToken")
+                }
+            }).then(function(response) {
+                // console.log(response);
+                app.visible = false;
+                app.getUserinfo();
+            })
+        }
     },
     created:function(){
         this.getUserinfo()
@@ -149,6 +171,15 @@ export default {
 <style>
 .userTab.el-tabs--border-card > .el-tabs__header{
   width: 277px;
+}
+.el-popover.myPopover{
+    left: 850px!important;
+}
+.el-popover.myPopover .el-form-item__label{
+  width: 70px!important;
+}
+.el-popover.myPopover .el-form-item__content{
+  margin-left:70px!important; 
 }
 a{
     text-decoration: none;
