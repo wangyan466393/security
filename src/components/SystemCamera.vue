@@ -1,5 +1,5 @@
 <template>
-    <div style="position:realtive">
+    <div style="position:relative;">
         <el-popover
         placement="bottom"
         title="新增摄像头"
@@ -32,6 +32,7 @@
             icon="el-icon-plus"
         >新增</el-button>
     </el-popover>
+    <div style="height:56px;"></div>
         <template>
             <el-table :data="cameraData" style="float:left;width: 65%;min-width:806px;">
                 <el-table-column
