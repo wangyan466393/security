@@ -27,9 +27,9 @@
           <el-col :span="8" style="position:absolute;right:0">
             <div class="header_right">
               <div class="current_time">
-                <span>{{timeFormat(date)}}</span>
+                <span>{{ $moment(date).format("HH:mm:ss")}}</span>
                 <br />
-                <span style="font-size: 12px;">{{dateFormat(date)}}</span>
+                <span style="font-size: 12px;">{{ $moment(date).format("YYYY-MM-DD") }}</span>
               </div>
               <div class="shu"></div>
               <div class="users">
@@ -87,6 +87,9 @@
                 <div class="suspect_box">
                   <h5 class="suspect_title">被盗车辆信息</h5>
                   <template>
+                    <div class="stolen_carImg">
+                      <img :src="carImg" alt="">
+                    </div>
                     <div class="suspect_info" v-for="(info,index) in stolen_car[0]" :key="index">
                       <p>车牌号：{{ info.car_number }}</p>
                       <div class="suspect_text">
@@ -94,7 +97,7 @@
                         <div>车主身份ID：{{ info.owner_identify }}</div>
                         <div>车辆型号：{{ info.car_model }}</div>
                         <div>车辆颜色：{{ info.car_color }}</div>
-                        <div>被盗时间：{{ info.stolen_time }}</div>
+                        <div>被盗时间：{{ $moment(info.stolen_time).format("YYYY-MM-DD HH:mm:ss") }}</div>
                         <div v-if="info.status == 0">案件类型：已结案</div>
                         <div v-if="info.status == 1">案件类型：在逃</div>
                         <div v-if="info.status == 2">案件类型：已报警在逃车辆</div>
@@ -146,7 +149,6 @@ export default {
       posAddr: "",
       cameraInfos: [], //摄像头信息
       carImg: "", //拍下的车辆图片路径
-      car_img: "", //库里在逃车辆图片路径
       stolen_car: "" //被偷车辆数据
     };
   },
@@ -189,13 +191,14 @@ export default {
       this.imgSrc = data.imgSrc;
       // (this.image_src = data.image_src),
       (this.personId = data.personId), (this.confidence = data.confidence); // 相似度
-      // this.carImg= data.carImg,   //拍下的车辆图片路径
-      // this.car_img= data.car_img,   //库里在逃车辆图片路径
+      this.num = data.record
 
       this.escapedInfo();
     },
     stolenCarF(data) {
-      this.stolen_car = data; //被偷车辆数据
+      this.stolen_car = data.stolen_car; //被偷车辆数据
+      this.num = data.record
+      this.carImg = data.carImg
     },
     posAddrs(data) {
       // 接收子组件传过来的定位地址
@@ -221,46 +224,7 @@ export default {
           }
         });
     },
-    dateFormat(time) {
-      var date = new Date(time);
-      var year = date.getFullYear();
-      /* 在日期格式中，月份是从0开始的，因此要加0
-       * 使用三元表达式在小于10的前面加0，以达到格式统一  如 09:11:05
-       * */
-      var month =
-        date.getMonth() + 1 < 10
-          ? "0" + (date.getMonth() + 1)
-          : date.getMonth() + 1;
-      var day = date.getDate() < 10 ? "0" + date.getDate() : date.getDate();
-      var hours =
-        date.getHours() < 10 ? "0" + date.getHours() : date.getHours();
-      var minutes =
-        date.getMinutes() < 10 ? "0" + date.getMinutes() : date.getMinutes();
-      var seconds =
-        date.getSeconds() < 10 ? "0" + date.getSeconds() : date.getSeconds();
-      // 拼接
-      return year + "-" + month + "-" + day;
-    },
-    timeFormat(time) {
-      var date = new Date(time);
-      var year = date.getFullYear();
-      /* 在日期格式中，月份是从0开始的，因此要加0
-       * 使用三元表达式在小于10的前面加0，以达到格式统一  如 09:11:05
-       * */
-      var month =
-        date.getMonth() + 1 < 10
-          ? "0" + (date.getMonth() + 1)
-          : date.getMonth() + 1;
-      var day = date.getDate() < 10 ? "0" + date.getDate() : date.getDate();
-      var hours =
-        date.getHours() < 10 ? "0" + date.getHours() : date.getHours();
-      var minutes =
-        date.getMinutes() < 10 ? "0" + date.getMinutes() : date.getMinutes();
-      var seconds =
-        date.getSeconds() < 10 ? "0" + date.getSeconds() : date.getSeconds();
-      // 拼接
-      return hours + ":" + minutes + ":" + seconds;
-    }
+    
   },
   beforeDestroy() {
     if (this.timer) {
@@ -485,5 +449,16 @@ export default {
   font-size: 30px;
   font-weight: 700;
   line-height: 2;
+}
+.stolen_carImg{
+  margin: 10px auto;
+  padding: 5px 5px 10px;
+  width: 350px;
+  height: 190px;
+  background: url(../images/ljp_box.png) no-repeat 0 0;
+  background-size: 100% 100%;
+}
+.stolen_carImg>img{
+  width: 100%;
 }
 </style>

@@ -230,26 +230,24 @@ export default {
       imageUrl:""
     };
   },
-  beforeRouteEnter: function(to, from, next) {
-    next(function(vm) {
-      // 在逃犯
-      vm.$http
+  created:function(){
+    this.getStolenCar();
+    this.getEscapedPersons();
+  },
+  methods: {
+    //获取在逃犯数据
+    getEscapedPersons(){
+      var that = this;
+      this.$http
         .get("/api/escape_persons", {
           params: {
             token: window.localStorage.getItem("userToken")
           }
         })
         .then(function(response) {
-          console.log(response.data);
-          vm.fugitiveData = response.data;
+          that.fugitiveData = response.data;
         });
-      
-    });
-  },
-  created:function(){
-    this.getStolenCar()
-  },
-  methods: {
+    },
     //新增疑犯
     addEscapedPerson(){
         var that = this;
@@ -259,7 +257,7 @@ export default {
           person_img: this.imageUrl.split(",")[1],
           identity_id: this.formLabelAlign.identity_id,
           case_type: this.formLabelAlign.case_type,
-          escape_time: this.dateFormat(this.formLabelAlign.escapeTime),
+          escape_time: this.$moment(this.formLabelAlign.escapeTime).format("YYYY-MM-DD HH:mm:ss"),
           status: this.formLabelAlign.status
       })
         this.$http.post("/api/escape_persons",data,{params:{token: window.localStorage.getItem("userToken")}}).then(function(response){
@@ -270,30 +268,11 @@ export default {
                   type: 'success'
                 });
                 that.visible = false;
+                that.getEscapedPersons();
             }else{
                this.$message.error('新增失败，请填写完整在逃犯信息！');
             }
         })
-    },
-    dateFormat(time) {
-      var date = new Date(time);
-      var year = date.getFullYear();
-      /* 在日期格式中，月份是从0开始的，因此要加0
-       * 使用三元表达式在小于10的前面加0，以达到格式统一  如 09:11:05
-       * */
-      var month =
-        date.getMonth() + 1 < 10
-          ? "0" + (date.getMonth() + 1)
-          : date.getMonth() + 1;
-      var day = date.getDate() < 10 ? "0" + date.getDate() : date.getDate();
-      var hours =
-        date.getHours() < 10 ? "0" + date.getHours() : date.getHours();
-      var minutes =
-        date.getMinutes() < 10 ? "0" + date.getMinutes() : date.getMinutes();
-      var seconds =
-        date.getSeconds() < 10 ? "0" + date.getSeconds() : date.getSeconds();
-      // 拼接
-      return year + "-" + month + "-" + day +" "+ hours + ":" + minutes + ":" + seconds;
     },
     tab_add(targetName){
           // console.log(targetName.index)
