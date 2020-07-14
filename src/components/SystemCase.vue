@@ -314,11 +314,7 @@ export default {
         "-" +
         this.p(dt.getDate()) +
         " " +
-<<<<<<< HEAD
         this.p(dt.getHours()) +
-=======
-        dt.getHours()+
->>>>>>> ljp
         ":" +
         this.p(dt.getMinutes()) +
         ":" +
