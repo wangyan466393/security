@@ -3,6 +3,7 @@
 import Vue from 'vue'
 import App from './App'
 import router from './router'
+import moment from 'moment'
 import request from './ajax.js'
 Vue.prototype.$http = request;
 import Element from 'element-ui'
@@ -21,7 +22,7 @@ VueAMap.initAMapApiLoader({
 });
 
 Vue.config.productionTip = false
-
+Vue.prototype.$moment = moment;
 /* eslint-disable no-new */
 new Vue({
   el: '#app',

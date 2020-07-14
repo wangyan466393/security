@@ -23,7 +23,6 @@
           :auto-upload="true"
           :file-list="fileList"
           :multiple="false"
-          :limit="1"
           :http-request="uploadFiles"
           accept="image/jpeg, image/gif, image/png"
           action
@@ -91,8 +90,6 @@ export default {
       thisContext: null,
       thisVideo: null,
       usertoken:"",
-      carImg: "",   //拍下的车辆图片路径
-      car_img:"" ,   //库里在逃车辆图片路径
       stolen_car:"" , //被偷车辆数据
       record:0
     };
@@ -105,12 +102,16 @@ export default {
         image_src: this.image_src,
         confidence: this.confidence,
         personId: this.personId,
-        
+        record:1
       });
     },
     //向父组件传递被偷车辆数据
     emitStolenCar(){
-        this.$emit("stolenCar",this.stolen_car)
+        this.$emit("stolenCar",{
+          stolen_car:this.stolen_car,
+          record:2,
+          carImg:this.carImg
+        })
     },
     // 调用权限（打开摄像头功能）
     getCompetence() {
