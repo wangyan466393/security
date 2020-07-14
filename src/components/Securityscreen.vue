@@ -13,10 +13,14 @@
                 <span style="font-size:12px;color:#a4daf2">INTELLIGENT SECURITY SYSTEM</span>
               </div>
               <div class="select_right">
-                <span class="camera" :title="selectedCamera"> {{ selectedCamera }}</span>
+                <span class="camera" :title="selectedCamera">{{ selectedCamera }}</span>
                 <ul class="camera_list" @click="selectCamera($event)">
-                    <li v-for="(info,index) in cameraInfos" :key="index" :data-addr="info.address">{{ info.device_name }}</li>
-                  </ul>
+                  <li
+                    v-for="(info,index) in cameraInfos"
+                    :key="index"
+                    :data-addr="info.address"
+                  >{{ info.device_name }}</li>
+                </ul>
               </div>
             </div>
           </el-col>
@@ -37,43 +41,70 @@
       </el-header>
       <el-container style="padding:25px 25px 0px;">
         <el-main style="margin-right:20px">
-          <photo ref="myphoto" v-on:zifu="hehe" :posAddr="posAddr"></photo>
+          <photo ref="myphoto" v-on:zifu="hehe" :posAddr="posAddr" @stolenCar="stolenCarF"></photo>
         </el-main>
         <el-aside width="450px">
           <el-row>
             <el-col :span="24">
-              <div class="suspect_box">
-                <h5 class="suspect_title">在逃人员信息</h5>
-                <div class="suspect_info" v-for="(info,index) in suspectInfo" :key="index">
-                  <p>嫌疑犯姓名：{{  info.person_name }}</p>
-                  <div  class="suspect_text">
-                    <div v-if="info.gender == 1">性别：男</div>
-                    <div>身份ID：{{ info.identity_id }}</div>
-                    <div>所犯案件：{{ info.case_type }}</div>
-                    <div v-if="info.status == 0">案件类型：已结案</div>
-                    <div v-if="info.status == 1">案件类型：在逃</div>
-                    <div v-if="info.status == 2">案件类型：已报警在逃人员</div>
-                    <img src="../images/police.png" alt />
+              <div v-if="num==1">
+                <div class="suspect_box">
+                  <h5 class="suspect_title">在逃人员信息</h5>
+                  <template>
+                    <div class="suspect_info" v-for="(info,index) in suspectInfo" :key="index">
+                      <p>嫌疑犯姓名：{{ info.person_name }}</p>
+                      <div class="suspect_text">
+                        <div v-if="info.gender == 1">性别：男</div>
+                        <div v-if="info.gender == 2">性别：女</div>
+                        <div>身份ID：{{ info.identity_id }}</div>
+                        <div>所犯案件：{{ info.case_type }}</div>
+                        <div v-if="info.status == 0">案件类型：已结案</div>
+                        <div v-if="info.status == 1">案件类型：在逃</div>
+                        <div v-if="info.status == 2">案件类型：已报警在逃人员</div>
+                        <img src="../images/police.png" alt />
+                      </div>
+                    </div>
+                  </template>
+                </div>
+                <!-- 疑犯照片 -->
+                <div class="suspect_box">
+                  <h5 class="suspect_title">嫌犯照片比对</h5>
+                  <div class="suspect_photo" v-if="imgSrc">
+                    <p>
+                      <img :src="imgSrc" style="width:100%;height: 125px;" />
+                    </p>
+                    <p>
+                      相似度
+                      <br />
+                      {{ confidence }}%
+                    </p>
+                    <p>
+                      <img :src="image_src" style="width:100%;height:125px;" />
+                    </p>
                   </div>
                 </div>
               </div>
-              <!-- 疑犯照片 -->
-              <div class="suspect_box">
-                <h5 class="suspect_title">嫌犯照片比对</h5>
-                <div class="suspect_photo" v-if="imgSrc">
-                  <p>
-                    <img :src="imgSrc" style="width:100%;height: 125px;" />
-                  </p>
-                  <p>
-                    相似度
-                    <br />
-                    {{ confidence }}%
-                  </p>
-                  <p>
-                    <img :src="image_src" style="width:100%;height:125px;" />
-                  </p>
+              <div v-else-if="num == 2">
+                <div class="suspect_box">
+                  <h5 class="suspect_title">被盗车辆信息</h5>
+                  <template>
+                    <div class="suspect_info" v-for="(info,index) in stolen_car[0]" :key="index">
+                      <p>车牌号：{{ info.car_number }}</p>
+                      <div class="suspect_text">
+                        <div>车主姓名：{{ info.owner_name }}</div>
+                        <div>车主身份ID：{{ info.owner_identify }}</div>
+                        <div>车辆型号：{{ info.car_model }}</div>
+                        <div>车辆颜色：{{ info.car_color }}</div>
+                        <div>被盗时间：{{ info.stolen_time }}</div>
+                        <div v-if="info.status == 0">案件类型：已结案</div>
+                        <div v-if="info.status == 1">案件类型：在逃</div>
+                        <div v-if="info.status == 2">案件类型：已报警在逃车辆</div>
+                        <img src="../images/police.png" alt />
+                      </div>
+                    </div>
+                  </template>
                 </div>
               </div>
+
               <!-- 实时地图 -->
               <div class="suspect_box">
                 <h5 class="suspect_title">
@@ -90,7 +121,6 @@
         </el-aside>
       </el-container>
     </el-container>
-    
   </div>
 </template>
 
@@ -102,18 +132,22 @@ export default {
   name: "securityscreen",
   data() {
     return {
-      selectedCamera:"摄像头选择",
+      num:0,
+      selectedCamera: "摄像头选择",
       date: new Date(),
       imgSrc: "", //疑犯拍摄
       image_src: "", //子组件发送过来的 疑犯文件base64
       confidence: "", //相似度
       personId: "", //疑犯id
-      userToken:"", 
-      username:"",
+      userToken: "",
+      username: "",
       // 疑犯信息
       suspectInfo: [],
-      posAddr:"",
-      cameraInfos:[],   //摄像头信息
+      posAddr: "",
+      cameraInfos: [], //摄像头信息
+      carImg: "", //拍下的车辆图片路径
+      car_img: "", //库里在逃车辆图片路径
+      stolen_car: "" //被偷车辆数据
     };
   },
   components: {
@@ -121,9 +155,8 @@ export default {
     LiveMap
   },
   created() {
-    this.checkCookie();
+    this.username = window.localStorage.getItem("username");
     this.userToken = window.localStorage.getItem("userToken");
-    
   },
   mounted() {
     let _this = this; // 声明一个变量指向Vue实例this，保证作用域一致
@@ -132,50 +165,42 @@ export default {
     }, 1000);
     //开启摄像头
     this.$refs.myphoto.getCompetence();
-    this.getCamera()
+    this.getCamera();
   },
   methods: {
-    selectCamera(e){
-        console.log(e.target.dataset.addr)
-        this.selectedCamera = e.target.innerText
-        this.posAddr = e.target.dataset.addr
+    selectCamera(e) {
+      console.log(e.target.dataset.addr);
+      this.selectedCamera = e.target.innerText;
+      this.posAddr = e.target.dataset.addr;
     },
     //获取摄像头信息
-    getCamera(){
+    getCamera() {
       let that = this;
-      this.$http.get("/api/camer_devices",{params:{token:that.userToken}}).then(function(response){
+      this.$http
+        .get("/api/camer_devices", { params: { token: that.userToken } })
+        .then(function(response) {
           console.log(response);
           that.cameraInfos = response.data;
-      })
+        });
     },
-    getCookie: function(cname) {
-      var name = cname + "=";
-      var ca = document.cookie.split(";");
-      for (var i = 0; i < ca.length; i++) {
-        var c = ca[i];
-        while (c.charAt(0) == " ") c = c.substring(1);
-        if (c.indexOf(name) != -1) return c.substring(name.length, c.length);
-      }
-      return "";
-    },
-    checkCookie: function() {
-      var user = this.getCookie("username");
-      if (user != "") {
-        this.username = user
-      }
-    },
+
     //接收子组件Photo.vue的数据
     hehe(data) {
       this.imgSrc = data.imgSrc;
-      (this.image_src = data.image_src),
-        (this.personId = data.personId),
-        (this.confidence = data.confidence);
+      // (this.image_src = data.image_src),
+      (this.personId = data.personId), (this.confidence = data.confidence); // 相似度
+      // this.carImg= data.carImg,   //拍下的车辆图片路径
+      // this.car_img= data.car_img,   //库里在逃车辆图片路径
 
       this.escapedInfo();
     },
-    posAddrs(data){   // 接收子组件传过来的定位地址
-        console.log(data)
-        this.posAddr = data;
+    stolenCarF(data) {
+      this.stolen_car = data; //被偷车辆数据
+    },
+    posAddrs(data) {
+      // 接收子组件传过来的定位地址
+      console.log(data);
+      this.posAddr = data;
     },
     //获取在逃疑犯数据
     escapedInfo() {
@@ -189,7 +214,11 @@ export default {
         })
         .then(function(response) {
           console.log(response.data);
-            that.suspectInfo = response.data
+          if (response.data.length > 0) {
+            that.suspectInfo = response.data;
+            that.image_src =
+              "data:image/jpeg;base64," + response.data[0].person_img;
+          }
         });
     },
     dateFormat(time) {
@@ -245,7 +274,7 @@ export default {
 <style scoped>
 .hello {
   background: url(../images/back.png) no-repeat;
-  /* background-size: 100%; */
+  background-size: 100% 100%;
   height: 100%;
   padding: 1px 5px;
   overflow: auto;
@@ -311,9 +340,9 @@ export default {
 .camera {
   margin-left: 26px;
   display: inline-block;
-    height: 44px;
-    width: 112px;
-    line-height: 46px;
+  height: 44px;
+  width: 112px;
+  line-height: 46px;
   padding: 0px 23px;
   color: #d1f5f6;
   font-weight: 600;
@@ -322,14 +351,14 @@ export default {
   background-size: 20px;
   cursor: pointer;
   font-size: 14px;
-  white-space:nowrap;
-  overflow:hidden;
-  text-overflow:ellipsis;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
-.select_right:hover .camera_list{
+.select_right:hover .camera_list {
   display: block;
 }
-.camera_list{
+.camera_list {
   display: none;
   padding-top: 15px;
   padding-bottom: 20px;
@@ -342,16 +371,15 @@ export default {
   width: 178px;
   text-align: center;
 }
-.camera_list li{
+.camera_list li {
   line-height: 34px;
-  color:#daffff;
+  color: #daffff;
   font-size: 14px;
- 
 }
-.camera_list li:hover{
+.camera_list li:hover {
   background: url(../images/ljp_li.png) no-repeat 0 0;
   background-size: 100%;
-   cursor: pointer;
+  cursor: pointer;
 }
 .current_time {
   margin-left: 40px;
@@ -426,7 +454,8 @@ export default {
 .suspect_text > img {
   position: absolute;
   right: 0;
-  top: 0;
+  top: 50%;
+  margin-top: -55px;
   width: 150px;
 }
 /* 嫌犯照片 */
@@ -457,6 +486,4 @@ export default {
   font-weight: 700;
   line-height: 2;
 }
-
-
 </style>

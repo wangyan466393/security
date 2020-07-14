@@ -79,8 +79,8 @@ export default {
       app.$http.post("/api/login", data).then(function(response) {
           // console.log(response.data);
             if(response.data.status === 0){
-              
               window.localStorage.setItem("userToken", response.data.result.token);
+               window.localStorage.setItem("username", app.username);
               console.log(response.data.result.token);
               if(response.data.result.user_type==1){
                 // console.log('管理员');

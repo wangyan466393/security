@@ -19,7 +19,7 @@
     <div class="toolbar">
       <p>显示文本内容：</p>
       <p>position: [{{ lng }}, {{ lat }}] address: {{ address }}</p>
-      {{ cameraInfos }}
+      <!-- {{ cameraInfos }} -->
     </div>
   </div>
 </template>
