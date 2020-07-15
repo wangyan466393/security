@@ -29,8 +29,10 @@
                         </el-table-column>
                         <el-table-column
                             label="操作"> 
-                             <a href="">删除</a>
-                             <a href="">修改</a>
+                             <template slot-scope="scope">
+                                 <a href="" @click.prevent='delUser(scope.row.id)'>删除</a>
+                                 <a href="" @click.prevent='editUser(scope.row.id)'>修改</a>
+                             </template>
                         </el-table-column>
                     </el-table>
                 </template>
@@ -96,6 +98,26 @@ export default {
         }
     },
     methods:{
+        // 删除用户
+                delUser: function(uid) {
+                    // 1.弹出提示框，确认是否删除
+                    if(confirm("您确定要删除本条记录吗？？？")){
+                        // 执行删除操作
+                        // console.log(uid);
+                        // 使用遍历，查找删除用户的id
+                        for(var i=0;i<this.userinfoData.length;i++){
+                            // 获取id
+                            // console.log(this.users[i].id);
+                            if(uid == this.userinfoData[i].id){
+                                this.userinfoData.splice(i,1);
+                                break;
+                            }
+                        }
+                    }else{
+                        //用户不删除，不做任何操作
+                        // console.log('不删除');
+                    }
+                },
         // p为不够10添加0的函数
             p(s) {
                 return s < 10 ? '0' + s : s

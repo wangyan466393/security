@@ -43,13 +43,20 @@
             <el-table-column prop="owner_identify" label="车主身份证号" width="160"></el-table-column>
             <el-table-column prop="stolen_time" label="被盗时间" width="180" :formatter="formatDate"></el-table-column>
             <el-table-column label="当前状态" width="80">
-              <template
-                slot-scope="scope"
-              >{{scope.row.status==0?'已结案':scope.row.status==1?'在逃':'已报警'}}</template>
+            
+              <template  slot-scope="scope">
+                
+                <input style="position:absolute;z-index:2;" type="text" v-if='scope.row.edit ==true'>
+                <span v-else>
+                    {{scope.row.status==0?'已结案':scope.row.status==1?'在逃':'已报警'}}
+                </span>
+              </template>
             </el-table-column>
             <el-table-column prop="update_time" label="更新时间" width="180" :formatter="formatDate"></el-table-column>
             <el-table-column label="操作">
-              <i class="el-icon-edit-outline"></i>
+              <template slot-scope="scope">
+                 <i @click.prevent='editStolenCar(scope.row.id)' class="el-icon-edit-outline"></i>
+              </template>
             </el-table-column>
           </el-table>
         </template>
@@ -139,7 +146,7 @@
         <el-col :span="24">
           <el-form :label-position="labelPosition" label-width="100px" :model="formstolenCar">
             <el-form-item label="车牌号：">
-              <el-input v-model="formstolenCar.car_number" clearable></el-input>
+              <el-input @blur="carNumberBlur" v-model="formstolenCar.car_number" clearable></el-input>
             </el-form-item>
             <el-form-item label="颜色：">
                <el-input v-model="formstolenCar.car_color" clearable></el-input>
@@ -151,7 +158,7 @@
               <el-input v-model="formstolenCar.owner_name"></el-input>
             </el-form-item>
             <el-form-item label="车主身份证号：">
-              <el-input v-model="formstolenCar.owner_identify"></el-input>
+              <el-input @blur="identifyBlur" v-model="formstolenCar.owner_identify"></el-input>
             </el-form-item>
             <el-form-item label="被偷时间：">
                 <el-col :span="24">
@@ -339,6 +346,86 @@ export default {
         const resTime = this.p(d.getHours()) + ':' + this.p(d.getMinutes()) + ':' + this.p(d.getSeconds())
         this.formstolenCar.stolenTime=resDate+' '+resTime;
     },
+    //车牌号验证方法
+    isVehicleNumber(vehicleNumber) {
+      var xreg=/^[京津沪渝冀豫云辽黑湘皖鲁新苏浙赣鄂桂甘晋蒙陕吉闽贵粤青藏川宁琼使领A-Z]{1}[A-Z]{1}(([0-9]{5}[DF]$)|([DF][A-HJ-NP-Z0-9][0-9]{4}$))/;
+      var creg=/^[京津沪渝冀豫云辽黑湘皖鲁新苏浙赣鄂桂甘晋蒙陕吉闽贵粤青藏川宁琼使领A-Z]{1}[A-Z]{1}[A-HJ-NP-Z0-9]{4}[A-HJ-NP-Z0-9挂学警港澳]{1}$/;
+      if(vehicleNumber.length == 7){
+        return creg.test(vehicleNumber);
+      } else if(vehicleNumber.length == 8){
+        return xreg.test(vehicleNumber);
+      } else{
+        return false;    
+      }
+    },
+    // 车牌号失去焦点验证
+    carNumberBlur(){
+      // console.log(this.formstolenCar.car_number);
+      var carNumReg=this.isVehicleNumber(this.formstolenCar.car_number);
+      console.log(carNumReg);
+      if(carNumReg==false){
+        this.$message({
+          message: '请输入正确的车牌号',
+          type: 'warning'
+        });
+        this.formstolenCar.car_number='';
+      }
+    },
+    identifyBlur(){
+      var identifyReg= this.checkIDCard(this.formstolenCar.owner_identify);
+      if(identifyReg==false){
+        this.$message({
+          message: '请输入正确的身份证号',
+          type: 'warning'
+        });
+        this.formstolenCar.owner_identify='';
+      }
+    },
+    // 函数参数必须是字符串，因为二代身份证号码是十八位，而在javascript中，十八位的数值会超出计算范围，造成不精确的结果，导致最后两位和计算的值不一致，从而该函数出现错误。
+    // 详情查看javascript的数值范围
+    checkIDCard(idcode){
+        // 加权因子
+        var weight_factor = [7,9,10,5,8,4,2,1,6,3,7,9,10,5,8,4,2];
+        // 校验码
+        var check_code = ['1', '0', 'X' , '9', '8', '7', '6', '5', '4', '3', '2'];
+
+        var code = idcode + "";
+        var last = idcode[17];//最后一位
+
+        var seventeen = code.substring(0,17);
+
+        // ISO 7064:1983.MOD 11-2
+        // 判断最后一位校验码是否正确
+        var arr = seventeen.split("");
+        var len = arr.length;
+        var num = 0;
+        for(var i = 0; i < len; i++){
+            num = num + arr[i] * weight_factor[i];
+        }
+        
+        // 获取余数
+        var resisue = num%11;
+        var last_no = check_code[resisue];
+
+        // 格式的正则
+        // 正则思路
+        /*
+        第一位不可能是0
+        第二位到第六位可以是0-9
+        第七位到第十位是年份，所以七八位为19或者20
+        十一位和十二位是月份，这两位是01-12之间的数值
+        十三位和十四位是日期，是从01-31之间的数值
+        十五，十六，十七都是数字0-9
+        十八位可能是数字0-9，也可能是X
+        */
+        var idcard_patter = /^[1-9][0-9]{5}([1][9][0-9]{2}|[2][0][0|1][0-9])([0][1-9]|[1][0|1|2])([0][1-9]|[1|2][0-9]|[3][0|1])[0-9]{3}([0-9]|[X])$/;
+
+        // 判断格式是否正确
+        var format = idcard_patter.test(idcode);
+
+        // 返回验证结果，校验码和格式同时正确才算是合法的身份证号码
+        return last === last_no && format ? true : false;
+    },
     // 新增被偷车辆
     addStolenCar(){
       var app = this;
@@ -361,6 +448,19 @@ export default {
           app.visible = false;
           app.getStolenCar();
        })
+    },
+    // 编辑被偷车辆
+    editStolenCar(CarID){
+      console.log(CarID);
+      for(var i=0;i<this.stolenCarData.length;i++){
+          // 编辑当前数据
+          // this.users[i]
+          // vm.$set Vue.set
+          if(CarID == this.stolenCarData[i].id){
+               this.$set(this.stolenCarData[i],'edit',true);
+                break;
+          }
+      }
     }
   }
 };

@@ -64,7 +64,7 @@
                 <el-table-column
                     prop="map_location"
                     label="定位信息"
-                    width="120">
+                    width="100">
                     <template slot-scope="scope">
                         {{scope.row.map_location|toMapLocation}}
                     </template>
@@ -84,7 +84,7 @@
                             >
                 </el-table-column>
             </el-table>
-            <div style="float:left;width:30%;margin-left:4%;">
+            <div style="float:left;width:30%;margin-left:3%;">
                 <live-map ></live-map>
             </div>
         </template>
@@ -116,14 +116,15 @@ export default {
       },
     filters:{
         toMapLocation:function(str){
-            var arr=str.split(",");
+            var arr=str.replace(/，/g,",").split(",");
+
             for(var i=0;i<arr.length;i++){
                 arr[i]=Math.round(parseFloat(arr[i])); 
-                console.log(arr[i]);
+                // console.log(arr[i]);
             }
             arr[0]=arr[0]+'N';
             arr[1]=arr[1]+'E';
-            console.log(arr);
+            // console.log(arr);
             return  arr.toString();
         }
     },
