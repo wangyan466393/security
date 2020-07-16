@@ -3,7 +3,7 @@
     <el-tabs type="border-card" @tab-click="tab_add">
       <el-tab-pane label="在逃犯管理">
         <template>
-          <el-table :data="fugitiveData" style="width: 100%">
+          <el-table :data="fugitiveDataPage" style="width: 100%" @row-click="handleRowClick">
             <el-table-column prop="person_name" label="姓名" width="80"></el-table-column>
             <el-table-column label="性别" width="80">
               <template slot-scope="scope">{{scope.row.gender==1?'男':'女'}}</template>
@@ -21,14 +21,28 @@
             <el-table-column prop="identity_id" label="身份证号" width="160"></el-table-column>
             <el-table-column prop="case_type" label="案件类型" width="100"></el-table-column>
             <el-table-column prop="escape_time" label="逃离时间" width="180" :formatter="formatDate"></el-table-column>
-            <el-table-column label="当前状态" width="80">
+            <el-table-column label="当前状态" width="110">
               <template
-                slot-scope="scope"
-              >{{scope.row.status==0?'已结案':scope.row.status==1?'在逃':'已报警'}}</template>
+                slot-scope="{$index,row}" 
+              >
+              <div class="select">
+              <span v-if="!editEscaped[$index]">{{row.status==0?'已结案':row.status==1?'在逃':'已报警'}}</span>
+              <el-select v-if="editEscaped[$index]" v-model="row.status" placeholder="请选择" @change="updateStatus">
+                  <el-option
+                    v-for="item in options"
+                    :key="item.value"
+                    :label="item.label"
+                    :value="item.value">
+                  </el-option>
+                </el-select>
+                </div>
+              </template>
             </el-table-column>
             <el-table-column prop="update_time" label="更新时间" width="180" :formatter="formatDate"></el-table-column>
             <el-table-column label="操作">
-              <i class="el-icon-edit-outline"></i>
+              <template slot-scope="{$index,row}">
+                <i class="el-icon-edit-outline" @click="editEscapedPerson($index,row)" ></i>
+              </template>
             </el-table-column>
           </el-table>
         </template>
@@ -61,6 +75,15 @@
           </el-table>
         </template>
       </el-tab-pane>
+      <el-pagination
+        :hide-on-single-page="paginationVal"
+        :total="total"
+        :page-size="pageSize"
+        @prev-click="prevPage"
+        @next-click="nextPage"
+        @current-change="currentPageFunc"
+        layout="prev, pager, next">
+      </el-pagination>
     </el-tabs>
     <el-popover
       popper-class="myPopover0"
@@ -217,7 +240,20 @@ export default {
         escapeTime:"",   //在逃时间
         status:""
       },
-      
+      editEscaped: [],    //编辑状态切换
+      rowId:"",
+      person_id:"",       //疑犯id
+      indexStatus:"",   //编辑指定行下标
+      options: [{
+          value: 1,
+          label: '在逃'
+        }, {
+          value: 2,
+          label: '已报警'
+        }, {
+          value: 0,
+          label: '已结案'
+        }],
       // 被偷车辆数据
       formstolenCar: {
         car_number: "",
@@ -234,14 +270,36 @@ export default {
                 return time.getTime() > Date.now() - 8.64e7;
             },
         },
-      imageUrl:""
+      imageUrl:"",
+      paginationVal:true, //只有一页时隐藏页码
+      total:0,     //数据总数
+      pageSize:5,     //每页显示个数
+      currentPage:1    //当前页
     };
   },
   created:function(){
     this.getStolenCar();
     this.getEscapedPersons();
   },
+  computed: {
+    fugitiveDataPage(){
+      let startVal =parseInt((this.currentPage-1) * this.pageSize);
+      return this.fugitiveData.slice(startVal,startVal+this.pageSize)  ;     
+      //1页 0  5  1-1 *5     (currentPage-1)*pageSize    (currentPage-1)*pageSize + pageSize
+      //2页 5 10   2-1 *5
+      //3页 10 15   3-1 *5
+    }
+  },
   methods: {
+    prevPage(val){
+      this.currentPage = val
+    },
+    nextPage(val){
+      this.currentPage = val
+    },
+    currentPageFunc(val){
+      this.currentPage = val
+    },
     //获取在逃犯数据
     getEscapedPersons(){
       var that = this;
@@ -252,8 +310,54 @@ export default {
           }
         })
         .then(function(response) {
-          that.fugitiveData = response.data;
+          if(response.data){
+              that.fugitiveData = response.data;
+              that.total = response.data.length;
+          }
+          
         });
+    },
+    //编辑疑犯状态
+    editEscapedPerson(index,row){
+      console.log(row);
+      this.rowId = row.id;
+      this.indexStatus = index;
+      this.editEscaped[index] = true;
+      this.$set(this.editEscaped, index, true);
+      this.person_id = row.id
+    },
+    updateStatus(val){   //更新疑犯状态数据
+      var that = this;
+      var data = qs.stringify({
+        person_id:this.person_id,
+        status:val
+      })
+      this.$http.put("/api/escape_person_status",data,{
+        params:{
+          token:window.localStorage.getItem("userToken")
+        }
+      }).then(function(response){
+          console.log(response);
+          if (response.status == 200 && response.data.length>0) {
+              that.$message({
+                message: '疑犯状态修改成功！',
+                type: 'success'
+              });
+              that.getEscapedPersons();
+              that.editEscaped[that.indexStatus] = false;
+              that.$set(that.editEscaped, that.indexStatus, false);
+          }else{
+            that.$message.error('修改状态失败，请重试！');
+          }
+      })
+    },
+    handleRowClick(row, column, event){
+      console.log(row, column, event)
+      if (row.id != this.rowId) {
+        this.editEscaped[this.indexStatus] = false;
+        this.$set(this.editEscaped, this.indexStatus, false);
+      }
+      
     },
     //新增疑犯
     addEscapedPerson(){
@@ -556,5 +660,11 @@ export default {
 .el-icon-edit-outline{
   font-size: 22px;
   color: #409EFF;
+}
+.el-pagination{
+  text-align: right;
+}
+.select .el-input__icon{
+  line-height: 0 !important;
 }
 </style>
