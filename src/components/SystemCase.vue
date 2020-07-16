@@ -49,27 +49,39 @@
       </el-tab-pane>
       <el-tab-pane label="被偷车辆管理">
         <template>
-          <el-table :data="stolenCarData" style="width: 100%">
-            <el-table-column prop="car_number" label="车牌号" width="80"></el-table-column>
+          <el-table :data="fugitiveDataPage" style="width: 100%" @row-click="handleRowClick">
+            <el-table-column prop="car_number" label="车牌号" width="100"></el-table-column>
             <el-table-column prop="car_color" label="颜色" width="80"></el-table-column>
             <el-table-column label="品牌" width="80" prop="car_model"></el-table-column>
             <el-table-column prop="owner_name" label="车主姓名" width="120"></el-table-column>
-            <el-table-column prop="owner_identify" label="车主身份证号" width="160"></el-table-column>
+            <el-table-column prop="owner_identify" label="车主身份证号" width="170"></el-table-column>
             <el-table-column prop="stolen_time" label="被盗时间" width="180" :formatter="formatDate"></el-table-column>
-            <el-table-column label="当前状态" width="80">
-            
-              <template  slot-scope="scope">
-                
-                <input style="position:absolute;z-index:2;" type="text" v-if='scope.row.edit ==true'>
-                <span v-else>
+            <el-table-column label="当前状态" width="110">
+            <template
+                slot-scope="{$index,row}" 
+              >
+              <div class="select">
+              <span v-if="!editStolCar[$index]">{{row.status==0?'已结案':row.status==1?'在逃':'已报警'}}</span>
+              <el-select v-if="editStolCar[$index]" v-model="row.status" placeholder="请选择" @change="updateStatus">
+                  <el-option
+                    v-for="item in options"
+                    :key="item.value"
+                    :label="item.label"
+                    :value="item.value">
+                  </el-option>
+                </el-select>
+                </div>
+              </template>
+              <!-- <template  slot-scope="scope">
+                <span>
                     {{scope.row.status==0?'已结案':scope.row.status==1?'在逃':'已报警'}}
                 </span>
-              </template>
+              </template> -->
             </el-table-column>
             <el-table-column prop="update_time" label="更新时间" width="180" :formatter="formatDate"></el-table-column>
             <el-table-column label="操作">
-              <template slot-scope="scope">
-                 <i @click.prevent='editStolenCar(scope.row.id)' class="el-icon-edit-outline"></i>
+              <template slot-scope="{$index,row}">
+                 <i @click.prevent='editStolenCar($index,row)' class="el-icon-edit-outline"></i>
               </template>
             </el-table-column>
           </el-table>
@@ -82,6 +94,7 @@
         @prev-click="prevPage"
         @next-click="nextPage"
         @current-change="currentPageFunc"
+        :current-page='currentPage'
         layout="prev, pager, next">
       </el-pagination>
     </el-tabs>
@@ -240,7 +253,7 @@ export default {
         escapeTime:"",   //在逃时间
         status:""
       },
-      editEscaped: [],    //编辑状态切换
+      editEscaped: [],    //编辑在逃犯状态切换
       rowId:"",
       person_id:"",       //疑犯id
       indexStatus:"",   //编辑指定行下标
@@ -264,6 +277,8 @@ export default {
         stolenTime:"",
         status:""
       },
+      editStolCar: [],    //编辑被偷车辆状态切换
+      car_id:'',//被偷车辆id
       pickerOptions:{                                 //禁用当前日期之前的日期
             disabledDate(time) {
             //Date.now()是javascript中的内置函数，它返回自1970年1月1日00:00:00 UTC以来经过的毫秒数。
@@ -273,7 +288,7 @@ export default {
       imageUrl:"",
       paginationVal:true, //只有一页时隐藏页码
       total:0,     //数据总数
-      pageSize:5,     //每页显示个数
+      pageSize:10,     //每页显示个数
       currentPage:1    //当前页
     };
   },
@@ -284,7 +299,12 @@ export default {
   computed: {
     fugitiveDataPage(){
       let startVal =parseInt((this.currentPage-1) * this.pageSize);
-      return this.fugitiveData.slice(startVal,startVal+this.pageSize)  ;     
+      if(this.tab_index==0){
+        return this.fugitiveData.slice(startVal,startVal+this.pageSize)  ; 
+      }else{
+        return this.stolenCarData.slice(startVal,startVal+this.pageSize)  ; 
+      }
+          
       //1页 0  5  1-1 *5     (currentPage-1)*pageSize    (currentPage-1)*pageSize + pageSize
       //2页 5 10   2-1 *5
       //3页 10 15   3-1 *5
@@ -328,36 +348,68 @@ export default {
     },
     updateStatus(val){   //更新疑犯状态数据
       var that = this;
-      var data = qs.stringify({
-        person_id:this.person_id,
-        status:val
-      })
-      this.$http.put("/api/escape_person_status",data,{
-        params:{
-          token:window.localStorage.getItem("userToken")
-        }
-      }).then(function(response){
-          console.log(response);
-          if (response.status == 200 && response.data.length>0) {
-              that.$message({
-                message: '疑犯状态修改成功！',
-                type: 'success'
-              });
-              that.getEscapedPersons();
-              that.editEscaped[that.indexStatus] = false;
-              that.$set(that.editEscaped, that.indexStatus, false);
-          }else{
-            that.$message.error('修改状态失败，请重试！');
+      if(this.tab_index==0){
+        var data = qs.stringify({
+          person_id:this.person_id,
+          status:val
+        })
+        this.$http.put("/api/escape_person_status",data,{
+          params:{
+            token:window.localStorage.getItem("userToken")
           }
-      })
+        }).then(function(response){
+            console.log(response);
+            if (response.status == 200 && response.data.length>0) {
+                that.$message({
+                  message: '疑犯状态修改成功！',
+                  type: 'success'
+                });
+                that.getEscapedPersons();
+                that.editEscaped[that.indexStatus] = false;
+                that.$set(that.editEscaped, that.indexStatus, false);
+            }else{
+              that.$message.error('修改状态失败，请重试！');
+            }
+        })
+      }else{
+        var data = qs.stringify({
+          car_id:this.car_id,
+          status:val
+        })
+        this.$http.put("/api/stolen_car_status",data,{
+          params:{
+            token:window.localStorage.getItem("userToken")
+          }
+        }).then(function(response){
+            console.log(response);
+            if (response.status == 200 && response.data.length>0) {
+                that.$message({
+                  message: '被盗车辆状态修改成功！',
+                  type: 'success'
+                });
+                that.getStolenCar();
+                that.editStolCar[that.indexStatus] = false;
+                that.$set(that.editStolCar, that.indexStatus, false);
+            }else{
+              that.$message.error('修改状态失败，请重试！');
+            }
+        })
+      }
+      
     },
     handleRowClick(row, column, event){
       console.log(row, column, event)
       if (row.id != this.rowId) {
-        this.editEscaped[this.indexStatus] = false;
-        this.$set(this.editEscaped, this.indexStatus, false);
+        console.log(this.tab_index);
+        if(this.tab_index==0){
+          this.editEscaped[this.indexStatus] = false;
+          this.$set(this.editEscaped, this.indexStatus, false);
+        }else if(this.tab_index==1){
+          this.editStolCar[this.indexStatus] = false;
+          this.$set(this.editStolCar, this.indexStatus, false);
+        }
+        
       }
-      
     },
     //新增疑犯
     addEscapedPerson(){
@@ -387,7 +439,9 @@ export default {
     },
     tab_add(targetName){
           // console.log(targetName.index)
-        this.tab_index = targetName.index
+        this.tab_index = targetName.index;
+        this.currentPage =1;
+
       },
     //时间方法区
     formatDate(row, column) {
@@ -464,7 +518,7 @@ export default {
     },
     // 车牌号失去焦点验证
     carNumberBlur(){
-      // console.log(this.formstolenCar.car_number);
+      console.log(this.formstolenCar.car_number);
       var carNumReg=this.isVehicleNumber(this.formstolenCar.car_number);
       console.log(carNumReg);
       if(carNumReg==false){
@@ -518,7 +572,7 @@ export default {
         第二位到第六位可以是0-9
         第七位到第十位是年份，所以七八位为19或者20
         十一位和十二位是月份，这两位是01-12之间的数值
-        十三位和十四位是日期，是从01-31之间的数值
+        十三位和十四位是日期，是从01修改-31之间的数值
         十五，十六，十七都是数字0-9
         十八位可能是数字0-9，也可能是X
         */
@@ -549,22 +603,25 @@ export default {
           }
        }).then(function(response) {
           // console.log(response);
-          app.visible = false;
-          app.getStolenCar();
+          if (response.status == 201) {
+                that.$message({
+                  message: '新增被偷车辆成功！',
+                  type: 'success'
+                });
+                that.visible = false;
+                that.getStolenCar();
+            }else{
+               this.$message.error('新增失败，请填写完整被偷车辆信息！');
+            }
        })
     },
     // 编辑被偷车辆
-    editStolenCar(CarID){
-      console.log(CarID);
-      for(var i=0;i<this.stolenCarData.length;i++){
-          // 编辑当前数据
-          // this.users[i]
-          // vm.$set Vue.set
-          if(CarID == this.stolenCarData[i].id){
-               this.$set(this.stolenCarData[i],'edit',true);
-                break;
-          }
-      }
+    editStolenCar(index,row){
+      console.log(row);
+      this.car_id=this.rowId = row.id;
+      this.indexStatus = index;
+      this.editStolCar[index] = true;
+      this.$set(this.editStolCar, index, true);
     }
   }
 };
