@@ -1,6 +1,6 @@
 <template>
   <div class="amap-page-container" id="amap-page-container">
-    <el-amap vid="amapDemo" :zoom="zoom" :plugin="plugin" :center="center" :events="events" class="amap-demo">
+    <el-amap vid="amapDemo" :zoom="zoom" :center="center" :plugin="plugin" :events="events" class="amap-demo">
       <!-- <el-amap-marker
         vid="component-marker"
         :position="componentMarker.position"
@@ -14,23 +14,36 @@
         :visible="marker.visible"
         :draggable="marker.draggable"
         :vid="index"
+        :icon="marker.icon"
       ></el-amap-marker>
+      <el-amap-circle  vid="circle"
+          :center="center" 
+          :radius="radius" 
+          fill-opacity="0.2"
+          strokeColor="#38f"
+          strokeOpacity="0.8"
+          strokeWeight="1"
+          fillColor="#38f"
+          >
+        </el-amap-circle>
     </el-amap>
     <div class="toolbar">
-      <p>显示文本内容：</p>
+      <!-- <p>显示文本内容：</p>
       <p>position: [{{ lng }}, {{ lat }}] address: {{ address }}</p>
-      <!-- {{ cameraInfos }} -->
+      {{ loglat }}
+       {{ cameraInfos }}
+       <img src="//a.amap.com/jsapi_demos/static/demo-center/icons/poi-marker-red.png"> --> 
     </div>
-    <!-- <button @click="s">增减</button> -->
   </div>
 </template>
 <script>
 import VueAMap from 'vue-amap';
+
 let amapManager = new VueAMap.AMapManager();
 import bus from "../eventBus";
 export default {
   name: "amap-page",
-  props:["cameraInfos"],
+  props:["cameraInfos","loglat"],
   data() {
     let self = this;
     return {
@@ -41,10 +54,14 @@ export default {
       lat: 0, //经度纬度
       zoom: 14,
       amapManager,
+      radius:80,
+       mapStyle: "amap://styles/8b6be8ec497009e17a708205348b899a",
       center: [116.27177, 40.04721], //默认定位得位置
       markers: [
         {
           position: [116.27177, 40.04721], //图标显示得位置
+          // icon:"//a.amap.com/jsapi_demos/static/demo-center/icons/poi-marker-red.png",
+          
           events: {
             click: e => {
               let { lng, lat } = e.lnglat;
@@ -65,16 +82,11 @@ export default {
                   }
                 }
               });
-            },
-            dragend: e => {
-              console.log("---event---: dragend");
-              this.markers[0].position = [e.lnglat.lng, e.lnglat.lat];
-            },
+            }
           },
           visible: true,
-          draggable: false, //拖拽移动点标记
-          template: "<span>1</span>"
-        },
+          draggable: false //拖拽移动点标记
+        }
         
       ],
       events: {    //点击地图获取对应的经纬度
@@ -100,6 +112,7 @@ export default {
       },
       plugin: [{
             pName: 'Geolocation',
+            showMarker: true,
             events: {
               init(o) {
                 // o 是高德地图定位插件实例
@@ -141,8 +154,12 @@ export default {
     watch :{
       cameraInfos:function(a,b){
         this.positionData(a);
+      },
+      loglat:function(a){
+          console.log(a)
+          this.loglat = a;
+          this.center = this.loglat.split(/[,，]/)
       }
-      
     },
 };
 </script>
@@ -150,5 +167,9 @@ export default {
 /*地图宽高*/
 .amap-demo {
   height: 200px;
+}
+.amap-icon img{
+  width: 22px !important;
+  height: 33px;
 }
 </style>

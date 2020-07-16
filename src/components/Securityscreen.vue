@@ -19,6 +19,7 @@
                     v-for="(info,index) in cameraInfos"
                     :key="index"
                     :data-addr="info.address"
+                    :data-loglat="info.map_location"
                   >{{ info.device_name }}</li>
                 </ul>
               </div>
@@ -116,7 +117,7 @@
                   </ul>
                 </h5>
                 <div class="suspect_map">
-                  <live-map @positionAddr="posAddrs" ref="livemap" :cameraInfos="cameraInfos"></live-map>
+                  <live-map @positionAddr="posAddrs" ref="livemap" :cameraInfos="cameraInfos" :loglat="loglat"></live-map>
                 </div>
               </div>
               
@@ -149,8 +150,10 @@ export default {
       suspectInfo: [],
       posAddr: "",
       cameraInfos: [], //摄像头信息
+      loglat:"",
       carImg: "", //拍下的车辆图片路径
       stolen_car: "" //被偷车辆数据
+
     };
   },
   components: {
@@ -171,10 +174,11 @@ export default {
     this.getCamera();
   },
   methods: {
-    selectCamera(e) {
-      console.log(e.target.dataset.addr);
+    selectCamera(e) {  //选择摄像头
+      console.log(e.target.dataset);
       this.selectedCamera = e.target.innerText;
       this.posAddr = e.target.dataset.addr;
+      this.loglat = e.target.dataset.loglat;
     },
     //获取摄像头信息
     getCamera() {
@@ -264,6 +268,8 @@ export default {
 }
 .el-container {
   position: relative;
+  background: url(../images/ljp_back05.png) no-repeat 0px bottom;
+  background-size: 100%;
 }
 .el-col .header_left {
   position: absolute;

@@ -280,8 +280,6 @@ export default {
                                 results.length > 0 &&
                                 results[i].confidence >= 0.80
                               ) {
-                                debugger;
-                                return;
                                 //confidence越高越相似
                                 //匹配到人脸且可信度高于85%,是疑犯
                                 that.fileId = results[0].fileId;
