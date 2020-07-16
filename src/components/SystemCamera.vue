@@ -4,19 +4,22 @@
         popper-class="myPopover0"
         placement="bottom"
         title="新增摄像头"
-        width="500"
+        width="600"
         trigger="manual"
         content=""
         v-model="visible"
         >
         <el-row>
-             <el-col :span="8" style="margin-top: 50px;">
+             <el-col :span="9" style="margin-top: 20px;">
                 <div style="text-align:center;">
-                    <!-- <live-map class="escapeImg"></live-map> -->
-                    <img class="escapeImg" :src="imageUrl" alt  />
+                    <div class="amap-page-container" style='height:220px;'>
+                        <el-amap ref="map" vid="amapPop" :plugin="plugin"  :center="center" :zoom="zoom"  :events="events" >
+                        </el-amap>
+                    </div>
+                    <!-- <img class="escapeImg" :src="imageUrl" alt  /> -->
                 </div>
             </el-col>
-            <el-col :span="16">
+            <el-col :span="14">
             <el-form :label-position="labelPosition" label-width="100px" :model="cameraD">
                 <el-form-item label="名称：">
                     <el-input v-model="cameraD.device_name" clearable></el-input>
@@ -48,6 +51,7 @@
             icon="el-icon-plus"
         >新增</el-button>
     </el-popover>
+
     <div style="height:56px;"></div>
         <template>
             <el-table :data="cameraData" style="float:left;width: 65%;min-width:806px;">
@@ -100,7 +104,54 @@ export default {
         LiveMap
     },
     data() {
+        let self = this;
         return {
+         //小地图数据 
+          zoom: 12,
+          center: [116.278301,40.053648],
+          events: {
+             click(e) {
+                let { lng, lat } = e.lnglat;
+                self.lng = lng;
+                self.lat = lat;
+                self.cameraD.map_location=self.lng+','+self.lat
+                console.log(self.lng,self.lat);
+                // 这里通过高德 SDK 完成。
+                var geocoder = new AMap.Geocoder({
+                    radius: 1000,
+                    extensions: "all"
+                });
+                geocoder.getAddress([lng ,lat], function(status, result) {
+                    if (status === 'complete' && result.info === 'OK') {
+                    if (result && result.regeocode) {
+                        self.cameraD.address=self.address = result.regeocode.formattedAddress;
+                        self.$nextTick();
+                        console.log(self.address);
+                    }
+                    }
+                });
+                }
+          },
+          plugin: [{
+            pName: 'Geolocation',
+            events: {
+              init(o) {
+                // o 是高德地图定位插件实例
+                o.getCurrentPosition((status, result) => {
+                  if (result && result.position) {
+                    console.log(result.formattedAddress)
+                    self.lng = result.position.lng;
+                    self.lat = result.position.lat;
+                    self.center = [self.lng, self.lat];
+                    self.address = result.formattedAddress;
+                    self.loaded = true;
+                    self.$nextTick();
+                  }
+                });
+              },
+              
+            }
+          }],
             // 摄像头数据
           cameraData: [],
           labelPosition: "right",
@@ -181,6 +232,7 @@ export default {
                 }).then(function(response) {
                     // console.log(response);
                     app.visible = false;
+                    app.cameraD=''
                     app.getCameraData();
                 })
             }
@@ -205,11 +257,11 @@ export default {
     text-align: center;
 }
 .el-popover.myPopover0{
-    left: 650px!important;
+    left: 550px!important;
     z-index: 9999!important;
 }
 .el-popover.myPopover0 .popper__arrow{
-    left: 490px !important;
+    left: 590px !important;
 }
 .escapeImg{
     margin: auto;
@@ -221,4 +273,5 @@ export default {
     background: #f9f9f9 url(../images/ljp_photo.png) no-repeat center;
     background-size: 90%;
 }
+
 </style>
