@@ -195,7 +195,7 @@ export default {
       var image = this.thisCancas.toDataURL("image/jpeg", 1.0);
       _this.imgSrc = image;
       this.base64Code = image.split(",")[1];
-      console.log(this.base64Code);
+      // console.log(this.base64Code);
       this.$emit("refreshDataList", this.imgSrc);
     },
     // base64转文件
@@ -247,7 +247,7 @@ export default {
                   pre.push(objectResults[i].objectName);
                   for (var j = 0; j < pre.length; j++) {
                     if (pre[j] == "person") {
-                      console.log("人");
+                      // console.log("人");
                       axios({
                         method: "POST",
                         url: that.aiPlatform.host + "/online-authorize",
@@ -272,15 +272,16 @@ export default {
                               "Content-Type": "application/json"
                             }
                           }).then(function(response) {
-                            console.log(response);
                             if (response.data.status == 0) {
                               let results =
                                 response.data.result.faces[0].results;
-                              // console.log(results)
-                              if (
+                               console.log(results)
+                                 if (
                                 results.length > 0 &&
-                                results[0].confidence >= 0.80
+                                results[i].confidence >= 0.80
                               ) {
+                                debugger;
+                                return;
                                 //confidence越高越相似
                                 //匹配到人脸且可信度高于85%,是疑犯
                                 that.fileId = results[0].fileId;
@@ -319,8 +320,7 @@ export default {
                                   });
                                 });
                                 return;
-                              } else {
-                              }
+                              } 
                             }
                           });
                         }
@@ -398,7 +398,6 @@ export default {
         if (that.base64Code) {
            that.objIdentification();
         }
-       
       };
       
     }

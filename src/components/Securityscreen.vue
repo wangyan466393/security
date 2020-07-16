@@ -119,6 +119,7 @@
                   <live-map @positionAddr="posAddrs" ref="livemap" :cameraInfos="cameraInfos"></live-map>
                 </div>
               </div>
+              
             </el-col>
           </el-row>
         </el-aside>
@@ -208,7 +209,7 @@ export default {
     //获取在逃疑犯数据
     escapedInfo() {
       let that = this;
-      this.$http
+        this.$http
         .get("/api/escape_persons", {
           params: {
             identity_id: this.personId,
@@ -222,9 +223,9 @@ export default {
             that.image_src =
               "data:image/jpeg;base64," + response.data[0].person_img;
           }
+          return;
         });
-    },
-    
+    }
   },
   beforeDestroy() {
     if (this.timer) {
@@ -331,7 +332,7 @@ export default {
   top: 62px;
   z-index: 3000;
   background: url(../images/ljp_list.png) no-repeat 0 0;
-  background-size: 100%;
+  background-size: 100% 100%;
   width: 178px;
   text-align: center;
 }
