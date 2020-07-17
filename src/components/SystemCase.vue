@@ -103,7 +103,7 @@
       placement="bottom"
       title="新增在逃犯"
       width="500"
-      trigger="manual"
+      trigger="click"
       content=""
       v-model="visible"
       v-if="tab_index == 0"
@@ -160,7 +160,7 @@
       <el-button
         type="primary"
         slot="reference"
-        @click="visible = !visible"
+        
         round
         style="position: absolute;right: 100px;top: 12px;padding: 8px 17px;"
         icon="el-icon-plus"
@@ -173,7 +173,7 @@
       placement="bottom"
       title="新增被偷车辆"
       width="350"
-      trigger="manual"
+      trigger="click"
       content=""
       v-model="visible"
       v-if="tab_index == 1"
@@ -182,7 +182,7 @@
         <el-col :span="24">
           <el-form :label-position="labelPosition" label-width="100px" :model="formstolenCar">
             <el-form-item label="车牌号：">
-              <el-input @blur="carNumberBlur" v-model="formstolenCar.car_number" clearable></el-input>
+              <el-input ref='refCarNumber' @blur="carNumberBlur" v-model="formstolenCar.car_number" clearable></el-input>
             </el-form-item>
             <el-form-item label="颜色：">
                <el-input v-model="formstolenCar.car_color" clearable></el-input>
@@ -194,7 +194,7 @@
               <el-input v-model="formstolenCar.owner_name"></el-input>
             </el-form-item>
             <el-form-item label="车主身份证号：">
-              <el-input @blur="identifyBlur" v-model="formstolenCar.owner_identify"></el-input>
+              <el-input ref='refIdentify' @blur="identifyBlur" v-model="formstolenCar.owner_identify"></el-input>
             </el-form-item>
             <el-form-item label="被偷时间：">
                 <el-col :span="24">
@@ -223,7 +223,7 @@
       <el-button
         type="primary"
         slot="reference"
-        @click="visible = !visible"
+        
         round
         style="position: absolute;right: 100px;top: 12px;padding: 8px 17px;"
         icon="el-icon-plus"
@@ -432,16 +432,17 @@ export default {
                 });
                 that.visible = false;
                 that.getEscapedPersons();
-            }else{
-               this.$message.error('新增失败，请填写完整在逃犯信息！');
+                that.formLabelAlign=''
             }
-        })
+        }).catch(function(error){
+               that.$message.error('新增失败，请填写完整在逃犯信息！');
+            })
     },
     tab_add(targetName){
           // console.log(targetName.index)
         this.tab_index = targetName.index;
         this.currentPage =1;
-
+        this.visible=false;
       },
     //时间方法区
     formatDate(row, column) {
@@ -527,6 +528,7 @@ export default {
           type: 'warning'
         });
         this.formstolenCar.car_number='';
+        this.$refs.refCarNumber.focus();
       }
     },
     identifyBlur(){
@@ -537,6 +539,7 @@ export default {
           type: 'warning'
         });
         this.formstolenCar.owner_identify='';
+        this.$refs.refIdentify.focus();
       }
     },
     // 函数参数必须是字符串，因为二代身份证号码是十八位，而在javascript中，十八位的数值会超出计算范围，造成不精确的结果，导致最后两位和计算的值不一致，从而该函数出现错误。
@@ -604,16 +607,17 @@ export default {
        }).then(function(response) {
           // console.log(response);
           if (response.status == 201) {
-                that.$message({
+                app.$message({
                   message: '新增被偷车辆成功！',
                   type: 'success'
                 });
-                that.visible = false;
-                that.getStolenCar();
-            }else{
-               this.$message.error('新增失败，请填写完整被偷车辆信息！');
+                app.visible = false;
+                app.getStolenCar();
+                app.formstolenCar='';
             }
-       })
+       }).catch(function(error){
+            app.$message.error('新增失败，请填写完整信息！');
+      })
     },
     // 编辑被偷车辆
     editStolenCar(index,row){

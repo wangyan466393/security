@@ -77,7 +77,7 @@ export default {
           password: this.password
       })
       app.$http.post("/api/login", data).then(function(response) {
-          // console.log(response.data);
+          console.log(response.data);
             if(response.data.status === 0){
               window.localStorage.setItem("userToken", response.data.result.token);
                window.localStorage.setItem("username", app.username);

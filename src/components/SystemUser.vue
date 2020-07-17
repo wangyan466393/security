@@ -14,6 +14,7 @@
                         <el-table-column
                             prop="password"
                             label="密码"
+                            
                             width="100">
                         </el-table-column>
                         <el-table-column
@@ -29,9 +30,9 @@
                         </el-table-column>
                         <el-table-column
                             label="操作"> 
-                             <template slot-scope="scope">
-                                 <a href="" @click.prevent='delUser(scope.row.id)'>删除</a>
-                                 <a href="" @click.prevent='editUser(scope.row.id)'>修改</a>
+                             <template slot-scope="{$index,row}">
+                                 <a href="" @click.prevent='delUser($index,row)'>删除</a>
+                                 <a href="" @click.prevent='editUser($index,row)'>修改</a>
                              </template>
                         </el-table-column>
                     </el-table>
@@ -44,17 +45,17 @@
             placement="bottom"
             title="新增用户"
             width="300"
-            trigger="manual"
+            trigger="click"
             content=""
             v-model="visible">
             <el-row>
                 <el-col :span="23">
                 <el-form :label-position="labelPosition" label-width="100px" :model="userinfo">
                     <el-form-item label="姓名：">
-                    <el-input v-model="userinfo.username" clearable></el-input>
+                    <el-input ref='refUserName' v-model="userinfo.username" @blur="usernameBlur" clearable></el-input>
                     </el-form-item>
                     <el-form-item label="密码：">
-                    <el-input v-model="userinfo.password" clearable></el-input>
+                    <el-input :maxlength="6" style="ime-mode:disabled;"  v-model="userinfo.password" clearable></el-input>
                     </el-form-item>
                     <el-form-item label="身份：">
                         <el-radio-group v-model="userinfo.user_type">
@@ -71,7 +72,6 @@
             <el-button
                 type="primary"
                 slot="reference"
-                @click="visible = !visible"
                 round
                 style="position: absolute;right: 100px;top: 12px;padding: 8px 17px;"
                 icon="el-icon-plus"
@@ -99,20 +99,31 @@ export default {
     },
     methods:{
         // 删除用户
-                delUser: function(uid) {
+                delUser: function(index,row) {
+                    console.log(row);
                     // 1.弹出提示框，确认是否删除
                     if(confirm("您确定要删除本条记录吗？？？")){
+
                         // 执行删除操作
-                        // console.log(uid);
-                        // 使用遍历，查找删除用户的id
-                        for(var i=0;i<this.userinfoData.length;i++){
-                            // 获取id
-                            // console.log(this.users[i].id);
-                            if(uid == this.userinfoData[i].id){
-                                this.userinfoData.splice(i,1);
-                                break;
+                        // console.log(row.id);
+                        var that=this;
+                        this.$http.delete('/api/userinfo_delete/'+row.id+'/',{
+                            params:{
+                                token:window.localStorage.getItem("userToken")
                             }
-                        }
+                        }).then(function(response){
+                            console.log(response);
+                            if (response.status == 200) {
+                                that.$message({
+                                    message: '删除用户成功',
+                                    type: 'success'
+                                });
+                                that.getUserinfo();
+        
+                            }else{
+                                that.$message.error('删除失败，请重试！');
+                            }
+                        })
                     }else{
                         //用户不删除，不做任何操作
                         // console.log('不删除');
@@ -145,7 +156,7 @@ export default {
             );
         },
         tab_change(targetName){
-          console.log(targetName.index)
+        //   console.log(targetName.index)
           this.tab_index = targetName.index;
           if(this.tab_index==0){
               this.tab_index=''
@@ -162,10 +173,11 @@ export default {
             }
             })
             .then(function(response) {
-                console.log(response.data);
+                // console.log(response.data);
                 app.userinfoData = response.data;
             });
         },
+        // 添加用户
         addUser(){
             var app = this;
             var data = qs.stringify({
@@ -180,9 +192,36 @@ export default {
                 }
             }).then(function(response) {
                 // console.log(response);
-                app.visible = false;
-                app.getUserinfo();
+                    that.$message({
+                    message: '新增用户成功',
+                    type: 'success'
+                    });
+                    app.visible = false;
+                    app.getUserinfo();
+                
+            }).catch(function(error){
+               this.$message.error('新增失败，请填写完整信息！');
             })
+        },
+        // 添加用户用户名验证
+        usernameBlur(){
+            let self = this;
+            console.log(this.userinfo.username);
+            for(var i=0;i<this.userinfoData.length;i++){
+                // console.log(this.userinfoData[i].username);
+                if(this.userinfo.username==this.userinfoData[i].username){
+                    // console.log('用户名已存在，请重新填写');
+                    this.$message({
+                        message: '用户名已存在，请重新填写',
+                        type: 'warning'
+                    });
+                    this.$refs.refUserName.focus();
+                }
+            }
+        },
+        // 修改用户
+        editUser(index,row){
+            console.log(row);
         }
     },
     created:function(){

@@ -38,7 +38,7 @@ export default {
     name:'system',
 }
 </script>
-<style>
+<style scoped>
 body{
     background: #f9f9f9;
 }

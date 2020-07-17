@@ -5,7 +5,7 @@
         placement="bottom"
         title="新增摄像头"
         width="600"
-        trigger="manual"
+        trigger="click"
         content=""
         v-model="visible"
         >
@@ -22,7 +22,7 @@
             <el-col :span="14">
             <el-form :label-position="labelPosition" label-width="100px" :model="cameraD">
                 <el-form-item label="名称：">
-                    <el-input v-model="cameraD.device_name" clearable></el-input>
+                    <el-input ref='refCameraName' @blur="cameraBlur" v-model="cameraD.device_name" clearable></el-input>
                 </el-form-item>
                 <el-form-item label="位置：">
                     <el-input v-model="cameraD.address" clearable></el-input>
@@ -45,7 +45,7 @@
         <el-button
             type="primary"
             slot="reference"
-            @click="visible = !visible"
+            
             round
             style="position: absolute;right: 100px;top: 12px;padding: 8px 17px;"
             icon="el-icon-plus"
@@ -231,10 +231,33 @@ export default {
                     }
                 }).then(function(response) {
                     // console.log(response);
+                    app.$message({
+                        message: '新增摄像头成功！',
+                        type: 'success'
+                    });
                     app.visible = false;
                     app.cameraD=''
                     app.getCameraData();
+                }).catch(function(error){
+                    app.$message.error('新增失败，请填写完整信息！');
                 })
+            },
+            // 添加摄像头名称验证
+            cameraBlur(){
+                let self=this;
+                // console.log(this.cameraD.device_name);
+                // cameraData
+                for(var i=0;i<this.cameraData.length;i++){
+                console.log(this.cameraData[i].device_name);
+                if(this.cameraD.device_name==this.cameraData[i].device_name){
+                    // console.log('用户名已存在，请重新填写');
+                    this.$message({
+                        message: '摄像头名称已存在，请重新填写',
+                        type: 'warning'
+                    });
+                    this.$refs.refCameraName.focus();
+                    }
+                }
             }
     },
     created:function(){
