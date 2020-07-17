@@ -19,11 +19,11 @@
       <el-amap-circle  vid="circle"
           :center="center" 
           :radius="radius" 
-          fill-opacity="0.2"
-          strokeColor="#38f"
+          fill-opacity="0.5"
+          strokeColor="#FF0000"
           strokeOpacity="0.8"
           strokeWeight="1"
-          fillColor="#38f"
+          fillColor="#FF0000"
           >
         </el-amap-circle>
     </el-amap>
@@ -47,7 +47,6 @@ export default {
   data() {
     let self = this;
     return {
-      
         //保存获取到的 经纬度
       address: "",
       lng: 0, //经度纬度
@@ -138,13 +137,36 @@ export default {
 			emitEvent(){
 				this.$emit("positionAddr",this.address)
       },
-      positionData(cameraInfos){
+      positionData(cameraInfos){   //摄像头位置
+        var self = this;
          for (let index = 0; index < cameraInfos.length; index++) {
            const element = cameraInfos[index];
            let lng = element.map_location.split(/[,，]/)[0]
            let lat = element.map_location.split(/[,，]/)[1]
           let marker = {
-            position: [lng, lat]
+            position: [lng, lat],
+            events: {     //为每一个位置的摄像头绑定事件
+            click: e => {
+              self.lng = lng;
+              self.lat = lat;
+              // 这里通过高德 SDK 完成。
+              var geocoder = new AMap.Geocoder({
+                radius: 1000,
+                extensions: "all"
+              });
+              geocoder.getAddress([lng, lat], function(status, result) {
+                if (status === "complete" && result.info === "OK") {
+                  if (result && result.regeocode) {
+                    self.address = result.regeocode.formattedAddress;
+                    self.center= [self.lng, self.lat]
+                    self.$nextTick( function(){
+                          self.emitEvent()
+                      });
+                  }
+                }
+              });
+            }
+          },
           };
           this.markers.push(marker);
          }

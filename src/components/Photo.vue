@@ -20,18 +20,20 @@
       <div class="layui-input-inline">
         <el-upload
           ref="upload"
-          :auto-upload="true"
           :file-list="fileList"
           :multiple="false"
-          :http-request="uploadFiles"
           accept="image/jpeg, image/gif, image/png"
           action
+          :http-request="uploadFiles"
           :on-change="uploadFiles"
         >
-          <el-button slot="trigger" size="mini" type="primary">选取图片</el-button>
-          <span>&nbsp;</span>
-          <!-- <el-button size="mini" type="primary">监测</el-button> -->
+          <el-button size="mini" type="primary">选取图片</el-button>
+          <span>&nbsp;</span> 
         </el-upload>
+        <!-- <div class="file">
+              上传
+            <input type="file" name="pic" ref="imgInput" @change="saveSrc()" />
+          </div> -->
       </div>
     </div>
   </div>
@@ -172,14 +174,6 @@ export default {
           console.log(err);
         });
     },
-    //获取图片base64
-    // getImgBase64(file) {
-    //   var reader = new FileReader();
-    //   reader.readAsDataURL(file);
-    //   reader.onload = function(e) {
-    //     base64Code = this.result.split(",")[1];
-    //   };
-    // },
     //  绘制图片（拍照功能）
     setImage() {
       var _this = this;
@@ -263,6 +257,7 @@ export default {
                             url:
                               `${that.aiPlatform.host}/apicore/cv/face-identification/1.7?token=` +
                               token,
+                            async:false,
                             data: JSON.stringify({
                               base64Data: that.base64Code,
                               format: "jpg",
@@ -275,10 +270,9 @@ export default {
                             if (response.data.status == 0) {
                               let results =
                                 response.data.result.faces[0].results;
-                               console.log(results)
                                  if (
                                 results.length > 0 &&
-                                results[i].confidence >= 0.80
+                                results[0].confidence >= 0.80
                               ) {
                                 //confidence越高越相似
                                 //匹配到人脸且可信度高于85%,是疑犯
@@ -288,7 +282,6 @@ export default {
                                 ).toFixed(2);
                                 that.personId = results[0].personId;
                                 that.photo_imgSrc = that.imgSrc;
-                                that.cyy(); //疑犯图像base64
                                 axios({
                                   method: "POST",
                                   url:
@@ -310,10 +303,12 @@ export default {
                                       token,
                                     responseType: "blob"
                                   }).then(function(response) {
+                                    console.log(response.data)
                                     that
                                       .blobToBase64(response.data)
                                       .then(res => {
                                         that.image_src = res;
+                                        that.cyy(); //疑犯图像base64
                                       });
                                   });
                                 });
@@ -382,23 +377,24 @@ export default {
     },
     //图片转base64
     //点击上传图片,上传成功返回图片路径
-    uploadFiles() {
+    uploadFiles(file,fileList) {
+      console.log(file,fileList);
       let that = this;
-      let file = this.$refs.upload.$refs["upload-inner"].$refs.input; //获取文件数据
-      let fileList = file.files;
       let reader = new FileReader(); //html5读文件
-      reader.readAsDataURL(fileList[0]); //转BASE64
+      reader.readAsDataURL(file.raw);
+      //转BASE64
       reader.onload = function(e) {
         that.carImg = e.target.result;
         that.imgSrc = e.target.result;
         that.base64Code = e.target.result.split(",")[1];
-        // console.log(that.base64Code)
         if (that.base64Code) {
            that.objIdentification();
         }
       };
       
-    }
+    },
+    
+    
   },
   created(){
     this.usertoken = window.localStorage.getItem("userToken")

@@ -207,7 +207,7 @@ export default {
     },
     posAddrs(data) {
       // 接收子组件传过来的定位地址
-      console.log(data);
+      // console.log(data);
       this.posAddr = data;
     },
     //获取在逃疑犯数据

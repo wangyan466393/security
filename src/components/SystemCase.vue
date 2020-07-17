@@ -131,7 +131,7 @@
                 </el-radio-group>
             </el-form-item>
             <el-form-item label="身份证号：">
-              <el-input v-model="formLabelAlign.identity_id" clearable></el-input>
+              <el-input  v-model="formLabelAlign.identity_id" clearable></el-input>
             </el-form-item>
             <el-form-item label="案件类型：">
               <el-input v-model="formLabelAlign.case_type"></el-input>
@@ -160,7 +160,10 @@
       <el-button
         type="primary"
         slot="reference"
+<<<<<<< HEAD
         
+=======
+>>>>>>> ljp
         round
         style="position: absolute;right: 100px;top: 12px;padding: 8px 17px;"
         icon="el-icon-plus"
@@ -233,10 +236,29 @@
 </template>
 <script>
 import qs from 'querystring';
+import axios from "axios";
 export default {
   name: "SystemCase",
   data() {
     return {
+      accesskey:
+        "29a594655f9df16005bc1d62f52529c13987aa43bfe3c596ef0226242e1b21e9",
+      secretkey:
+        "ede12a7b3a576506d626b1f1af24a74c3a14874e1a8e036df20e531c34238795",
+      aiPlatform: {
+        // host: 'https://api.brain.lenovo.com',
+        // host: "https://public-api.brain.lenovo.com/",
+        host: " https://test-leva.brain.lenovo.com/api",
+        url: {
+          getToken: "/online-authorize",
+          visionTech: {
+            faceDetection: "/apicore/cv/face-detection/1.6",
+            /* 人脸检测*/
+            faceIdentification: "/apicore/cv/face-identification/1.7"
+            /*人脸识别*/
+          }
+        }
+      },
       // 在逃犯数据
       fugitiveData: [],
       // 被偷车辆数据
@@ -330,6 +352,7 @@ export default {
           }
         })
         .then(function(response) {
+          console.log(response.data);
           if(response.data){
               that.fugitiveData = response.data;
               that.total = response.data.length;
@@ -474,12 +497,69 @@ export default {
         this.imageUrl = " ";
         console.log("没有选择图片");
       }
-      const _this = this;
+      const that = this;
       let reader = new FileReader();
       reader.readAsDataURL(file); // 读出 base64
       reader.onloadend = function() {
-        _this.imageUrl = reader.result;
+        let base64 = reader.result.split(",")[1];
+        let imgBase64 = reader.result;
+         if(base64){
+           axios({
+            url: that.aiPlatform.host + "/online-authorize",
+            async: false,
+            method: "post",
+            data: JSON.stringify({
+              accesskey: that.accesskey,
+              secretkey: that.secretkey
+            })
+          }).then(function(response){
+            if (response.data.status == 0) {
+            var token = response.data.result.token;
+            axios({
+              method: "POST",
+              async: false,
+              url:
+                `${that.aiPlatform.host}/apicore/cv/object-recognition/1.6?token=` +
+                token,
+              data: JSON.stringify({
+                imageId: that.getUuid(),
+                base64Data: base64
+              }),
+              headers: { "Content-Type": "application/json" }
+            }).then(function(res) {
+              if (res.data.result.objectResults) {
+                var objectResults = res.data.result.objectResults;
+                var pre = [];
+                for (var i = 0; i < objectResults.length; i++) {
+                  pre.push(objectResults[i].objectName);
+                  for (var j = 0; j < pre.length; j++) {
+                    if (pre[j] == "person") {
+                      // console.log("人");
+                      that.imageUrl = reader.result;
+                    }else{
+                      that.$message.error('请上传人物头像照片哦！（格式为：jpg、png、gif）');
+                    }
+                  }
+                }
+              }else{
+                that.$message.error('请上传人物头像照片哦！（格式为：jpg、png、gif）');
+              }
+            });
+          }
+          })
+         }
+        
       };
+    },
+    /****设置图片id****/
+    getUuid() {
+      return "xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx".replace(/[xy]/g, function(
+        c
+      ) {
+        var r = (Math.random() * 16) | 0,
+          v = c == "x" ? r : (r & 0x3) | 0x8;
+        return v.toString(16);
+      });
     },
     getStolenCar(){
       var app=this
