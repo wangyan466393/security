@@ -4,7 +4,7 @@ import axios from 'axios';
 // 2.借助辅助函数
 // 3.创建实例对象
 const request = axios.create({
-    baseURL:'http://172.16.1.102:8000'
+    baseURL:'http://172.16.1.104:8000'
 })
 
 export default request;
