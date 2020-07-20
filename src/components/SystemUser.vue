@@ -3,24 +3,26 @@
         <el-tabs class="userTab" type="border-card" @tab-click="tab_change">
             <el-tab-pane v-for='(item,index) in labelData' :key='index' :label="item">
                   <template>
-                    <el-table
+                    <el-table @row-click="handleRowClick"
                     :data="userinfoData"
                     style="width: 100%">
                         <el-table-column
                             prop="username"
                             label="用户名"
-                            width="100">
+                            width="120">
                         </el-table-column>
-                        <el-table-column
-                            prop="password"
+                        <el-table-column 
                             label="密码"
-                            
-                            width="100">
+                            width="120">
+                            <template slot-scope="{$index,row}">
+                                <span v-if="!editUserPwd[$index]">{{row.password}}</span>
+                                <el-input @blur="updatePwd(row.password)" @keyup.enter.native='updatePwd(row.password)' v-if='editUserPwd[$index]' show-password v-model="row.password"  placeholder="请输入6位数密码"></el-input>
+                            </template>
+                                
                         </el-table-column>
                         <el-table-column
-                
                             label="身份"
-                            width="100"> 
+                            width="120"> 
                             <template slot-scope="scope">{{scope.row.user_type==1?'管理员':'普通用户'}}</template>
                         </el-table-column>
                         <el-table-column
@@ -94,10 +96,21 @@ export default {
                 username:'',
                 password:'',
                 user_type:''
-            }
+            },
+            user_id:'',
+            indexStatus:'', //编辑指定行下标
+            editUserPwd: [],    //编辑用户密码切换
         }
     },
     methods:{
+        handleRowClick(row, column, event){
+            console.log(row, column, event)
+            if (row.id != this.user_id) {              
+                this.editUserPwd[this.indexStatus] = false;
+                this.$set(this.editUserPwd, this.indexStatus, false);  
+            }
+        },
+       
         // 删除用户
                 delUser: function(index,row) {
                     console.log(row);
@@ -222,7 +235,38 @@ export default {
         // 修改用户
         editUser(index,row){
             console.log(row);
-        }
+            this.user_id=row.id;
+            this.indexStatus = index;
+            this.editUserPwd[index] = true;
+            this.$set(this.editUserPwd, index, true);
+        },
+         // 修改密码
+         updatePwd(val){
+             var that = this;
+             var data = qs.stringify({
+                id:this.user_id,
+                password:val
+             })
+             console.log(val);
+            this.$http.put("/api/userinfo_update",data,{
+            params:{
+                token:window.localStorage.getItem("userToken")
+            }
+            }).then(function(response){
+                console.log(response);
+                if (response.status == 200 && response.data.length>0) {
+                    that.$message({
+                    message: '用户密码修改成功！',
+                    type: 'success'
+                    });
+                    that.getUserinfo();
+                    that.editUserPwd[that.indexStatus] = false;
+                    that.$set(that.editUserPwd, that.indexStatus, false);
+                }else{
+                that.$message.error('修改密码失败，请重试！');
+                }
+            })
+         }
     },
     created:function(){
         this.getUserinfo()
