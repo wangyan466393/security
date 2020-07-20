@@ -1,6 +1,6 @@
 <template>
   <div class="camera_outer">
-    <video id="videoCamera" :width="videoWidth" :height="videoHeight" autoplay></video>
+    <video id="videoCamera" :width="videoWidth" :height="videoHeight" preload autoplay></video>
     <canvas style="display:none;" id="canvasCamera" :width="videoWidth" :height="videoHeight"></canvas>
     <!-- 显示位置地址 -->
     <div class="camera_addr">
@@ -173,6 +173,7 @@ export default {
         .catch(err => {
           console.log(err);
         });
+      
     },
     //  绘制图片（拍照功能）
     setImage() {
@@ -391,10 +392,7 @@ export default {
            that.objIdentification();
         }
       };
-      
-    },
-    
-    
+    }
   },
   created(){
     this.usertoken = window.localStorage.getItem("userToken")

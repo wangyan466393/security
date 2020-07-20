@@ -160,10 +160,6 @@
       <el-button
         type="primary"
         slot="reference"
-<<<<<<< HEAD
-        
-=======
->>>>>>> ljp
         round
         style="position: absolute;right: 100px;top: 12px;padding: 8px 17px;"
         icon="el-icon-plus"

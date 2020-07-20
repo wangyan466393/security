@@ -111,10 +111,11 @@
 
               <!-- 实时地图 -->
               <div class="suspect_box">
-                <h5 class="suspect_title">
-                  <ul>
+                <h5 class="suspect_title" style="overflow:hidden">
+                  <ul style="float:left">
                     <li>实时地图</li>
                   </ul>
+                  <!-- <span style="float:right">北七家摄像头</span> -->
                 </h5>
                 <div class="suspect_map">
                   <live-map @positionAddr="posAddrs" ref="livemap" :cameraInfos="cameraInfos" :loglat="loglat"></live-map>
