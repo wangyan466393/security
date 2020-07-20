@@ -22,22 +22,31 @@ export default new Router({
         path: 'systemCase',
 				component: SystemCase,
 				name: 'SystemCase',
-				meta: { requiresAuth: true }
+				meta: {
+          requireAuth: true,  // 添加该字段，表示进入这个路由是需要登录的
+        },
       },{
         path: 'systemCamera',
 				component: SystemCamera,
 				name: 'SystemCamera',
-				meta: { requiresAuth: true }
+				meta: {
+          requireAuth: true,  // 添加该字段，表示进入这个路由是需要登录的
+        },
       },{
         path: 'systemUser',
 				component: SystemUser,
 				name: 'SystemUser',
-				meta: { requiresAuth: true }
+				meta: {
+          requireAuth: true,  // 添加该字段，表示进入这个路由是需要登录的
+        },
       }]
     },{
       path:"/securityscreen",
       name:"securityscreen",
-      component:Securityscreen
+      component:Securityscreen,
+      meta: {
+        requireAuth: true,  // 添加该字段，表示进入这个路由是需要登录的
+      },
     }
   ]
 })
