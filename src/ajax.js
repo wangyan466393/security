@@ -6,4 +6,5 @@ import axios from 'axios';
 const request = axios.create({
     baseURL:'http://172.16.1.104:8000'
 })
+
 export default request;

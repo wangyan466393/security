@@ -21,7 +21,6 @@ VueAMap.initAMapApiLoader({
   v: '1.4.4'
 });
 
-
 Vue.config.productionTip = false
 Vue.prototype.$moment = moment;
 /* eslint-disable no-new */
