@@ -6,6 +6,7 @@ import SystemCase from '@/components/SystemCase.vue'
 import SystemCamera from '@/components/SystemCamera.vue'
 import SystemUser from '@/components/SystemUser.vue'
 import Securityscreen from '@/components/Securityscreen.vue'
+import Tracking from "@/components/Tracking.vue"
 Vue.use(Router)
 
 export default new Router({
@@ -47,6 +48,11 @@ export default new Router({
       meta: {
         requireAuth: true,  // 添加该字段，表示进入这个路由是需要登录的
       },
+    },
+    {
+      path:"/tracking",
+      name:"tracking",
+      component:Tracking,
     }
   ]
 })

@@ -1,7 +1,7 @@
 <template>
   <div class="camera_outer">
-    <video id="videoCamera" :width="videoWidth" :height="videoHeight" preload autoplay></video>
-    <canvas style="display:none;" id="canvasCamera" :width="videoWidth" :height="videoHeight"></canvas>
+    <video id="videoCamera"  :width="videoWidth" :height="videoHeight" preload autoplay></video>
+    <canvas id="canvasCamera" :width="videoWidth" :height="videoHeight"></canvas>
     <!-- 显示位置地址 -->
     <div class="camera_addr">
       <i class="el-icon-location">
@@ -30,15 +30,13 @@
           <el-button size="mini" type="primary">选取图片</el-button>
           <span>&nbsp;</span> 
         </el-upload>
-        <!-- <div class="file">
-              上传
-            <input type="file" name="pic" ref="imgInput" @change="saveSrc()" />
-          </div> -->
       </div>
     </div>
   </div>
 </template>
 <script>
+require("tracking/build/tracking-min.js");
+require("tracking/build/data/face-min.js");
 import qs from 'querystring';
 import bus from "../eventBus";
 import axios from "axios";
@@ -82,10 +80,10 @@ export default {
       },
       videoWidth: 820,
       videoHeight: 800,
+      trackerTask: null,
       imgSrc: "",
       photo_imgSrc: "", //拍摄到的疑犯头像base64
       base64Code: "",
-      image_src: "", //文件下载的疑犯头像
       confidence: "", //相似度
       personId: "", //疑犯id
       thisCancas: null,
@@ -98,10 +96,9 @@ export default {
   },
   methods: {
     //向父组件发送数据疑犯信息
-    cyy() {
+    emitScaped() {
       this.$emit("zifu", {
         imgSrc: this.photo_imgSrc,
-        image_src: this.image_src,
         confidence: this.confidence,
         personId: this.personId,
         record:1
@@ -169,6 +166,24 @@ export default {
           _this.thisVideo.onloadedmetadata = function(e) {
             _this.thisVideo.play();
           };
+        
+          const tracker = new window.tracking.ObjectTracker("face");
+          tracker.setInitialScale(4);
+          tracker.setStepSize(2);
+          tracker.setEdgesDensity(0.1);
+          // 启动摄像头初始化
+          _this.trackerTask = window.tracking.track(
+            "#videoCamera",
+            tracker,
+            {camera:true}
+          );
+          tracker.on("track", function(event) {
+            _this.thisContext.clearRect(0, 0, _this.thisCancas.width, _this.thisCancas.height);
+            event.data.forEach(function(rect) {
+              _this.thisContext.strokeStyle = "#ff0000";
+              _this.thisContext.strokeRect( rect.x, rect.y, rect.width, rect.height);
+            });
+          });
         })
         .catch(err => {
           console.log(err);
@@ -276,43 +291,44 @@ export default {
                                 results[0].confidence >= 0.80
                               ) {
                                 //confidence越高越相似
-                                //匹配到人脸且可信度高于85%,是疑犯
+                                //匹配到人脸且可信度高于80%,是疑犯
                                 that.fileId = results[0].fileId;
                                 that.confidence = (
                                   results[0].confidence * 100
                                 ).toFixed(2);
                                 that.personId = results[0].personId;
                                 that.photo_imgSrc = that.imgSrc;
-                                axios({
-                                  method: "POST",
-                                  url:
-                                    that.aiPlatform.host + "/online-authorize",
-                                  data: JSON.stringify({
-                                    accesskey: that.accesskey,
-                                    secretkey: that.secretkey
-                                  })
-                                }).then(function(response) {
-                                  let token = response.data.result.token;
-                                  axios({
-                                    //通过文件id获取疑犯照片
-                                    method: "GET",
-                                    url:
-                                      that.aiPlatform.host +
-                                      "/file/download/file/" +
-                                      that.fileId +
-                                      "?token=" +
-                                      token,
-                                    responseType: "blob"
-                                  }).then(function(response) {
-                                    console.log(response.data)
-                                    that
-                                      .blobToBase64(response.data)
-                                      .then(res => {
-                                        that.image_src = res;
-                                        that.cyy(); //疑犯图像base64
-                                      });
-                                  });
-                                });
+                                that.emitScaped(); //父组件需要的数据
+                                // axios({
+                                //   method: "POST",
+                                //   url:
+                                //     that.aiPlatform.host + "/online-authorize",
+                                //   data: JSON.stringify({
+                                //     accesskey: that.accesskey,
+                                //     secretkey: that.secretkey
+                                //   })
+                                // }).then(function(response) {
+                                //   let token = response.data.result.token;
+                                //   axios({
+                                //     //通过文件id获取疑犯照片
+                                //     method: "GET",
+                                //     url:
+                                //       that.aiPlatform.host +
+                                //       "/file/download/file/" +
+                                //       that.fileId +
+                                //       "?token=" +
+                                //       token,
+                                //     responseType: "blob"
+                                //   }).then(function(response) {
+                                //     console.log(response.data)
+                                //     that
+                                //       .blobToBase64(response.data)
+                                //       .then(res => {
+                                //         that.image_src = res;
+                                //         that.cyy(); //疑犯图像base64
+                                //       });
+                                //   });
+                                // });
                                 return;
                               } 
                             }
@@ -415,20 +431,18 @@ export default {
 .camera_outer {
   position: relative;
   overflow: hidden;
-  // background: url("../../assets/img/user_0608_04.png") no-repeat center;
-  background-size: 100%;
-  height: 100%;
+  height: 800px;
   video,
   canvas,
   .tx_img {
-    -moz-transform: scaleX(-1);
-    -webkit-transform: scaleX(-1);
-    -o-transform: scaleX(-1);
-    transform: scaleX(-1);
+    // -moz-transform: scaleX(-1);
+    // -webkit-transform: scaleX(-1);
+    // -o-transform: scaleX(-1);
+    // transform: scaleX(-1);
+    position: absolute;
   }
-  video {
-    position: relative;
-    top: -40px;
+  #videoCamera{
+    top:-40px;
   }
   .btn_box {
     position: absolute;
@@ -468,24 +482,6 @@ export default {
       font-weight: 600;
       letter-spacing: 2px;
     }
-  }
-  .btn_camera {
-    position: absolute;
-    bottom: 4px;
-    left: 0;
-    right: 0;
-    height: 50px;
-    background-color: rgba(0, 0, 0, 0.3);
-    line-height: 50px;
-    text-align: center;
-    color: #ffffff;
-  }
-  .bg_r_img {
-    position: absolute;
-    bottom: 0;
-    left: 0;
-    right: 0;
-    top: 0;
   }
   .img_bg_camera {
     visibility: hidden;
