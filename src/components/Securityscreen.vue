@@ -42,7 +42,7 @@
       </el-header>
       <el-container style="padding:25px 25px 0px;">
         <el-main style="margin-right:20px">
-          <photo ref="myphoto" v-on:zifu="hehe" :posAddr="posAddr" @stolenCar="stolenCarF"></photo>
+          <photo ref="myphoto" v-on:zifu="scapedFunc" :posAddr="posAddr" @stolenCar="stolenCarF"></photo>
         </el-main>
         <el-aside width="450px">
           <el-row>
@@ -142,16 +142,15 @@ export default {
       selectedCamera: "摄像头选择",
       date: new Date(),
       imgSrc: "", //疑犯拍摄
-      image_src: "", //子组件发送过来的 疑犯文件base64
+      image_src: "", // 疑犯文件base64
       confidence: "", //相似度
       personId: "", //疑犯id
       userToken: "",
       username: "",
-      // 疑犯信息
-      suspectInfo: [],
+      suspectInfo: [],  // 疑犯信息
       posAddr: "",
       cameraInfos: [], //摄像头信息
-      loglat:"",
+      loglat:"",   // 经纬度
       carImg: "", //拍下的车辆图片路径
       stolen_car: "" //被偷车辆数据
 
@@ -193,12 +192,10 @@ export default {
     },
 
     //接收子组件Photo.vue的数据
-    hehe(data) {
+    scapedFunc(data) {
       this.imgSrc = data.imgSrc;
-      // (this.image_src = data.image_src),
       (this.personId = data.personId), (this.confidence = data.confidence); // 相似度
       this.num = data.record
-
       this.escapedInfo();
     },
     stolenCarF(data) {
@@ -468,5 +465,6 @@ export default {
 }
 .stolen_carImg>img{
   width: 100%;
+  height: 100%;
 }
 </style>
