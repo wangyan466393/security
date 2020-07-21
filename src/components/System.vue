@@ -23,7 +23,8 @@
             </el-col>
             <el-col :span="4" class="header-right">
                 <img src="../images/wy-sysBell.png" alt="">
-                <img src="../images/wy-sysUser.png" alt="">
+                <img class="userImg" src="../images/wy-sysUser.png" alt="">
+                <span >{{LoginName}}</span>
             </el-col>
             </el-row>
         </header>
@@ -36,6 +37,14 @@
 <script>
 export default {
     name:'system',
+    data() {
+        return {
+            LoginName:''
+        };
+    },
+    created() {
+    this.LoginName = window.localStorage.getItem("username");
+    },
 }
 </script>
 <style scoped>
@@ -91,13 +100,17 @@ header .el-row{
 .grid-content a:last-child>span{
     left:22px;
 }
+.header-right span{
+    line-height: 70px;
+    margin-left: 10px;
+}
 .header-right>img:first-child{
     float: left;
     height: 24px;
     margin-top: 23px;
     margin-right: 40px;
 }
-.header-right>img:last-child{
+.header-right>img.userImg{
     float: left;
     height: 30px;
     margin-top: 20px;
