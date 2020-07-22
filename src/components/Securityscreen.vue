@@ -67,9 +67,9 @@
                   </template>
                 </div>
                 <!-- 疑犯照片 -->
-                <div class="suspect_box">
+                <div class="suspect_box" v-if="imgSrc">
                   <h5 class="suspect_title">嫌犯照片比对</h5>
-                  <div class="suspect_photo" v-if="imgSrc">
+                  <div class="suspect_photo" v-for="(imgs,index) in image_src" :key="index">
                     <p>
                       <img :src="imgSrc" style="width:100%;height: 125px;" />
                     </p>
@@ -79,7 +79,7 @@
                       {{ confidence }}%
                     </p>
                     <p>
-                      <img :src="image_src" style="width:100%;height:125px;" />
+                      <img :src="'data:image/jpeg;base64,'+imgs" style="width:100%;height:125px;" />
                     </p>
                   </div>
                 </div>
@@ -142,7 +142,7 @@ export default {
       selectedCamera: "摄像头选择",
       date: new Date(),
       imgSrc: "", //疑犯拍摄
-      image_src: "", // 疑犯文件base64
+      image_src:[], // 疑犯文件base64
       confidence: "", //相似度
       personId: "", //疑犯id
       userToken: "",
@@ -180,19 +180,20 @@ export default {
       this.posAddr = e.target.dataset.addr;
       this.loglat = e.target.dataset.loglat;
     },
-    //获取摄像头信息
+    //获取定位摄像头信息
     getCamera() {
       let that = this;
       this.$http
         .get("/api/camer_devices", { params: { token: that.userToken } })
         .then(function(response) {
-          console.log(response);
+          // console.log(response);
           that.cameraInfos = response.data;
         });
     },
 
     //接收子组件Photo.vue的数据
     scapedFunc(data) {
+      this.$forceUpdate();
       this.imgSrc = data.imgSrc;
       (this.personId = data.personId), (this.confidence = data.confidence); // 相似度
       this.num = data.record
@@ -220,10 +221,15 @@ export default {
         })
         .then(function(response) {
           console.log(response.data);
+          that.$forceUpdate();
           if (response.data.length > 0) {
             that.suspectInfo = response.data;
-            that.image_src =
-              "data:image/jpeg;base64," + response.data[0].person_img;
+            var image_src=[];
+            //   "data:image/jpeg;base64," + response.data[0].person_img;
+            for(let i =0 ; i<response.data.length; i++){
+              image_src.push(response.data[i].person_img)
+            }
+            that.image_src = image_src;
           }
           return;
         });

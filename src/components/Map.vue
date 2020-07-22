@@ -38,7 +38,6 @@
 </template>
 <script>
 import VueAMap from 'vue-amap';
-
 let amapManager = new VueAMap.AMapManager();
 import bus from "../eventBus";
 export default {
@@ -54,13 +53,12 @@ export default {
       zoom: 14,
       amapManager,
       radius:80,
-       mapStyle: "amap://styles/8b6be8ec497009e17a708205348b899a",
+      mapStyle: "amap://styles/8b6be8ec497009e17a708205348b899a",
       center: [116.27177, 40.04721], //默认定位得位置
       markers: [
         {
           position: [116.27177, 40.04721], //图标显示得位置
           // icon:"//a.amap.com/jsapi_demos/static/demo-center/icons/poi-marker-red.png",
-          
           events: {
             click: e => {
               let { lng, lat } = e.lnglat;
@@ -178,7 +176,7 @@ export default {
         this.positionData(a);
       },
       loglat:function(a){
-          console.log(a)
+          // console.log(a)
           this.loglat = a;
           this.center = this.loglat.split(/[,，]/)
       }

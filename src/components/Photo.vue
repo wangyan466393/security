@@ -26,6 +26,8 @@
           action
           :http-request="uploadFiles"
           :on-change="uploadFiles"
+          v-loading.fullscreen.lock="fullscreenLoading"
+          element-loading-text="拼命加载中"
         >
           <el-button size="mini" type="primary">选取图片</el-button>
           <span>&nbsp;</span> 
@@ -91,7 +93,9 @@ export default {
       thisVideo: null,
       usertoken:"",
       stolen_car:"" , //被偷车辆数据
-      record:0
+      carImg:"",
+      record:0,
+      fullscreenLoading:false
     };
   },
   methods: {
@@ -206,6 +210,9 @@ export default {
       _this.imgSrc = image;
       this.base64Code = image.split(",")[1];
       // console.log(this.base64Code);
+      if(this.base64Code){
+        this.objIdentification()
+      }
       this.$emit("refreshDataList", this.imgSrc);
     },
     // base64转文件
@@ -229,9 +236,11 @@ export default {
     objIdentification() {
       var that = this;
       if (this.base64Code) {
+        that.fullscreenLoading = true;
         axios({
           url: that.aiPlatform.host + "/online-authorize",
           method: "post",
+          async:false,
           data: JSON.stringify({
             accesskey: that.accesskey,
             secretkey: that.secretkey
@@ -241,6 +250,7 @@ export default {
             var token = response.data.result.token;
             axios({
               method: "POST",
+              async:false,
               url:
                 `${that.aiPlatform.host}/apicore/cv/object-recognition/1.6?token=` +
                 token,
@@ -273,7 +283,6 @@ export default {
                             url:
                               `${that.aiPlatform.host}/apicore/cv/face-identification/1.7?token=` +
                               token,
-                            async:false,
                             data: JSON.stringify({
                               base64Data: that.base64Code,
                               format: "jpg",
@@ -283,6 +292,7 @@ export default {
                               "Content-Type": "application/json"
                             }
                           }).then(function(response) {
+                            console.log(response)
                             if (response.data.status == 0) {
                               let results =
                                 response.data.result.faces[0].results;
@@ -299,36 +309,7 @@ export default {
                                 that.personId = results[0].personId;
                                 that.photo_imgSrc = that.imgSrc;
                                 that.emitScaped(); //父组件需要的数据
-                                // axios({
-                                //   method: "POST",
-                                //   url:
-                                //     that.aiPlatform.host + "/online-authorize",
-                                //   data: JSON.stringify({
-                                //     accesskey: that.accesskey,
-                                //     secretkey: that.secretkey
-                                //   })
-                                // }).then(function(response) {
-                                //   let token = response.data.result.token;
-                                //   axios({
-                                //     //通过文件id获取疑犯照片
-                                //     method: "GET",
-                                //     url:
-                                //       that.aiPlatform.host +
-                                //       "/file/download/file/" +
-                                //       that.fileId +
-                                //       "?token=" +
-                                //       token,
-                                //     responseType: "blob"
-                                //   }).then(function(response) {
-                                //     console.log(response.data)
-                                //     that
-                                //       .blobToBase64(response.data)
-                                //       .then(res => {
-                                //         that.image_src = res;
-                                //         that.cyy(); //疑犯图像base64
-                                //       });
-                                //   });
-                                // });
+                                that.fullscreenLoading = false;
                                 return;
                               } 
                             }
@@ -346,10 +327,6 @@ export default {
                           {
                             params:{
                               token: window.localStorage.getItem("userToken"),
-                            },
-                            headers: {
-                              "Content-Type":
-                                "application/x-www-form-urlencoded"
                             }
                           }
                         )
@@ -358,8 +335,9 @@ export default {
                             if (response.data.length>0) {
                               that.stolen_car = response.data;
                               that.emitStolenCar()
+                               that.fullscreenLoading = false;
                             }
-                        });
+                        }).catch((err)=>{console.log(err)});
                     }
                   }
                 }
@@ -368,19 +346,6 @@ export default {
           }
         });
       }
-    },
-    blobToBase64(blob) {
-      return new Promise((resolve, reject) => {
-        const fileReader = new FileReader();
-        fileReader.onload = e => {
-          resolve(e.target.result);
-        };
-        // readAsDataURL
-        fileReader.readAsDataURL(blob);
-        fileReader.onerror = () => {
-          reject(new Error("文件流异常"));
-        };
-      });
     },
     /****设置图片id****/
     getUuid() {
@@ -395,7 +360,6 @@ export default {
     //图片转base64
     //点击上传图片,上传成功返回图片路径
     uploadFiles(file,fileList) {
-      console.log(file,fileList);
       let that = this;
       let reader = new FileReader(); //html5读文件
       reader.readAsDataURL(file.raw);
@@ -412,9 +376,6 @@ export default {
   },
   created(){
     this.usertoken = window.localStorage.getItem("userToken")
-  },
-  updated() {
-    this.objIdentification();
   },
   // mounted() {
   //   //定时拍照
