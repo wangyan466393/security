@@ -132,6 +132,7 @@ export default {
                                     message: '删除用户成功',
                                     type: 'success'
                                 });
+                                that.tab_index=(that.tab_index==0)?'':that.tab_index;
                                 that.getUserinfo(that.tab_index);
         
                             }else{
@@ -261,6 +262,7 @@ export default {
                     message: '用户密码修改成功！',
                     type: 'success'
                     });
+                    that.tab_index=(that.tab_index==0)?'':that.tab_index;
                     that.getUserinfo(that.tab_index);
                     that.editUserPwd[that.indexStatus] = false;
                     that.$set(that.editUserPwd, that.indexStatus, false);
