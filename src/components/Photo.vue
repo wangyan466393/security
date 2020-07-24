@@ -316,7 +316,7 @@ export default {
                                 clearInterval(that.timer);
                                 that.timer = null;
                                 
-                                that.timer = setInterval(that.setImage,5000);
+                                // that.timer = setInterval(that.setImage,5000);
                                 return;
                               } 
                             }
