@@ -175,7 +175,7 @@ export default {
   },
   methods: {
     selectCamera(e) {  //选择摄像头
-      console.log(e.target.dataset);
+      // console.log(e.target.dataset);
       this.selectedCamera = e.target.innerText;
       this.posAddr = e.target.dataset.addr;
       this.loglat = e.target.dataset.loglat;
@@ -186,7 +186,7 @@ export default {
       this.$http
         .get("/api/camer_devices", { params: { token: that.userToken } })
         .then(function(response) {
-          // console.log(response);
+          console.log(response);
           that.cameraInfos = response.data;
         });
     },
@@ -206,8 +206,16 @@ export default {
     },
     posAddrs(data) {
       // 接收子组件传过来的定位地址
-      // console.log(data);
-      this.posAddr = data;
+       console.log(data);
+      this.posAddr = data.address;
+      for (let i = 0; i < this.cameraInfos.length; i++) {
+        const lngC = this.cameraInfos[i].map_location.split(/[,，]/)[0];
+        const latC = this.cameraInfos[i].map_location.split(/[,，]/)[1];
+        if(data.lng == lngC && data.lat == latC){
+            this.selectedCamera = this.cameraInfos[i].device_name;
+        }
+      }
+
     },
     //获取在逃疑犯数据
     escapedInfo() {

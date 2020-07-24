@@ -133,7 +133,11 @@ export default {
   },
   methods:{
 			emitEvent(){
-				this.$emit("positionAddr",this.address)
+				this.$emit("positionAddr",{
+          address:this.address,
+          lng:this.lng,
+          lat:this.lat
+          })
       },
       positionData(cameraInfos){   //摄像头位置
         var self = this;
@@ -157,6 +161,7 @@ export default {
                   if (result && result.regeocode) {
                     self.address = result.regeocode.formattedAddress;
                     self.center= [self.lng, self.lat]
+                    console.log(self.lng, self.lat)
                     self.$nextTick( function(){
                           self.emitEvent()
                       });
