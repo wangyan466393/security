@@ -141,6 +141,7 @@
                     style="width:233px"
                     v-model="formLabelAlign.escapeTime"
                     type="datetime"
+                    :picker-options="pickerOptions"
                     placeholder="选择日期时间">
                   </el-date-picker>
             </el-form-item>
@@ -306,7 +307,7 @@ export default {
       imageUrl:"",
       paginationVal:true, //只有一页时隐藏页码
       total:0,     //数据总数
-      pageSize:10,     //每页显示个数
+      pageSize:5,     //每页显示个数
       currentPage:1    //当前页
     };
   },
@@ -400,7 +401,7 @@ export default {
             token:window.localStorage.getItem("userToken")
           }
         }).then(function(response){
-            console.log(response);
+            // console.log(response);
             if (response.status == 200 && response.data.length>0) {
                 that.$message({
                   message: '被盗车辆状态修改成功！',
@@ -419,7 +420,7 @@ export default {
     handleRowClick(row, column, event){
       console.log(row, column, event)
       if (row.id != this.rowId) {
-        console.log(this.tab_index);
+        // console.log(this.tab_index);
         if(this.tab_index==0){
           this.editEscaped[this.indexStatus] = false;
           this.$set(this.editEscaped, this.indexStatus, false);
@@ -491,7 +492,7 @@ export default {
       let file = this.$refs.imgInput.files[0];
       if (file === undefined) {
         this.imageUrl = " ";
-        console.log("没有选择图片");
+        // console.log("没有选择图片");
       }
       const that = this;
       let reader = new FileReader();
@@ -566,7 +567,7 @@ export default {
           }
         })
         .then(function(response) {
-          console.log(response.data);
+          // console.log(response.data);
           app.stolenCarData = response.data;
         });
     },

@@ -26,7 +26,6 @@
           action
           :http-request="uploadFiles"
           :on-change="uploadFiles"
-          v-loading.fullscreen.lock="fullscreenLoading"
           element-loading-text="拼命加载中"
         >
           <el-button size="mini" type="primary">选取图片</el-button>
@@ -95,14 +94,15 @@ export default {
       stolen_car:"" , //被偷车辆数据
       carImg:"",
       record:0,
-      fullscreenLoading:false
+      fullscreenLoading:false,
+      timer:null
     };
   },
   methods: {
     //向父组件发送数据疑犯信息
     emitScaped() {
       this.$emit("zifu", {
-        imgSrc: this.photo_imgSrc,
+        imgSrc: this.imgSrc,
         confidence: this.confidence,
         personId: this.personId,
         record:1
@@ -192,7 +192,7 @@ export default {
         .catch(err => {
           console.log(err);
         });
-      
+      // this.timer = setInterval(this.setImage,1000);
     },
     //  绘制图片（拍照功能）
     setImage() {
@@ -229,6 +229,8 @@ export default {
     },
     // 关闭摄像头
     stopNavigator() {
+      clearInterval(this.timer);
+      this.timer=null;
       this.thisVideo.srcObject.getTracks()[0].stop();
     },
 
@@ -236,7 +238,6 @@ export default {
     objIdentification() {
       var that = this;
       if (this.base64Code) {
-        that.fullscreenLoading = true;
         axios({
           url: that.aiPlatform.host + "/online-authorize",
           method: "post",
@@ -267,7 +268,9 @@ export default {
                   pre.push(objectResults[i].objectName);
                   for (var j = 0; j < pre.length; j++) {
                     if (pre[j] == "person") {
+                      that.fullscreenLoading = true;
                       // console.log("人");
+                      var base64LS = that.base64Code
                       axios({
                         method: "POST",
                         url: that.aiPlatform.host + "/online-authorize",
@@ -284,7 +287,7 @@ export default {
                               `${that.aiPlatform.host}/apicore/cv/face-identification/1.7?token=` +
                               token,
                             data: JSON.stringify({
-                              base64Data: that.base64Code,
+                              base64Data: base64LS,
                               format: "jpg",
                               groupNames: "escapePersonGroup"
                             }),
@@ -292,7 +295,7 @@ export default {
                               "Content-Type": "application/json"
                             }
                           }).then(function(response) {
-                            console.log(response)
+                            // console.log(response)
                             if (response.data.status == 0) {
                               let results =
                                 response.data.result.faces[0].results;
@@ -302,14 +305,18 @@ export default {
                               ) {
                                 //confidence越高越相似
                                 //匹配到人脸且可信度高于80%,是疑犯
-                                that.fileId = results[0].fileId;
+                                // that.fileId = results[0].fileId;
                                 that.confidence = (
                                   results[0].confidence * 100
                                 ).toFixed(2);
                                 that.personId = results[0].personId;
-                                that.photo_imgSrc = that.imgSrc;
+                                // that.photo_imgSrc = that.imgSrc;
                                 that.emitScaped(); //父组件需要的数据
                                 that.fullscreenLoading = false;
+                                clearInterval(that.timer);
+                                that.timer = null;
+                                
+                                that.timer = setInterval(that.setImage,5000);
                                 return;
                               } 
                             }
@@ -379,7 +386,7 @@ export default {
   },
   // mounted() {
   //   //定时拍照
-  //   setInterval(this.setImage,1000);
+  //  this.timer = setInterval(this.setImage,1000);
   // },
   watch: {
     posAddr(a) {

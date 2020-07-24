@@ -1,7 +1,7 @@
 <template>
     <div style="position:relative"> 
-        <el-tabs class="userTab" type="border-card" @tab-click="tab_change">
-            <el-tab-pane v-for='(item,index) in labelData' :key='index' :label="item">
+        <el-tabs class="userTab" type="border-card" @tab-click="tab_change" >
+            <el-tab-pane v-for='(item,index) in labelData' :key='index' :name='index+""' :label="item">
                   <template>
                     <el-table @row-click="handleRowClick"
                     :data="userinfoData"
@@ -72,6 +72,7 @@
                 </el-col>
             </el-row>
             <el-button
+                v-show="tab_index==0"
                 type="primary"
                 slot="reference"
                 round
@@ -131,7 +132,7 @@ export default {
                                     message: '删除用户成功',
                                     type: 'success'
                                 });
-                                that.getUserinfo();
+                                that.getUserinfo(that.tab_index);
         
                             }else{
                                 that.$message.error('删除失败，请重试！');
@@ -169,7 +170,7 @@ export default {
             );
         },
         tab_change(targetName){
-        //   console.log(targetName.index)
+          console.log(targetName)
           this.tab_index = targetName.index;
           if(this.tab_index==0){
               this.tab_index=''
@@ -205,15 +206,16 @@ export default {
                 }
             }).then(function(response) {
                 // console.log(response);
-                    that.$message({
+                    app.$message({
                     message: '新增用户成功',
                     type: 'success'
                     });
                     app.visible = false;
-                    app.getUserinfo();
-                
+                    app.userinfo='';
+                    app.getUserinfo(app.tab_index);
+
             }).catch(function(error){
-               this.$message.error('新增失败，请填写完整信息！');
+               app.$message.error('新增失败，请填写完整信息！');
             })
         },
         // 添加用户用户名验证
@@ -259,7 +261,7 @@ export default {
                     message: '用户密码修改成功！',
                     type: 'success'
                     });
-                    that.getUserinfo();
+                    that.getUserinfo(that.tab_index);
                     that.editUserPwd[that.indexStatus] = false;
                     that.$set(that.editUserPwd, that.indexStatus, false);
                 }else{
