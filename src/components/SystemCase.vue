@@ -452,7 +452,7 @@ export default {
                 });
                 that.visible = false;
                 that.getEscapedPersons();
-                that.formLabelAlign=''
+                // that.formLabelAlign=''
             }
         }).catch(function(error){
                that.$message.error('新增失败，请填写完整在逃犯信息！');
@@ -463,6 +463,11 @@ export default {
         this.tab_index = targetName.index;
         this.currentPage =1;
         this.visible=false;
+        if (this.tab_index==0) {
+          this.getEscapedPersons()
+        }else{
+          this.getStolenCar()
+        }
       },
     //时间方法区
     formatDate(row, column) {
@@ -569,6 +574,8 @@ export default {
         .then(function(response) {
           // console.log(response.data);
           app.stolenCarData = response.data;
+          app.total = response.data.length;
+          console.log(app.total)
         });
     },
     // 被偷时间
@@ -690,7 +697,7 @@ export default {
                 });
                 app.visible = false;
                 app.getStolenCar();
-                app.formstolenCar='';
+                // app.formstolenCar='';
             }
        }).catch(function(error){
             app.$message.error('新增失败，请填写完整信息！');

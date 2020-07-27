@@ -325,26 +325,33 @@ export default {
                       });
                     } else if (pre[j] == "vehicle" || pre[j] == "car") {
                       console.log("汽车");
-                      var data = qs.stringify({
-                            car_img: that.base64Code,
-                        })
+                      let base64C = that.base64Code
+                      // var data = qs.stringify({
+                      //       car_img: base64C,
+                      //   })
+                        var data = new FormData();
+                        data.append("car_img",base64C)
                       that.$http
                         .post(
                           "/api/stolen_car_detection",data,
                           {
                             params:{
                               token: window.localStorage.getItem("userToken"),
+                            },
+                            headers:{
+                              'Content-Type': 'application/x-www-form-urlencoded'
                             }
                           }
                         )
                         .then(function(response) {
+                          debugger;
                           console.log(response.data);  
                             if (response.data.length>0) {
                               that.stolen_car = response.data;
                               that.emitStolenCar()
                                that.fullscreenLoading = false;
                             }
-                        }).catch((err)=>{console.log(err)});
+                        })
                     }
                   }
                 }
