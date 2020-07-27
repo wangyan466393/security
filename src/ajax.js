@@ -1,4 +1,3 @@
-
 import axios from 'axios';
 import {
     Message,
@@ -8,11 +7,6 @@ import {
 const _axios = axios.create({
     baseURL: 'http://172.16.1.104:8000'
 })
-
-
-
-
-// 配置默认的host,假如你的API host是：http://api.htmlx.club
 // 添加请求拦截器
 _axios.interceptors.request.use(function (config) {
    
@@ -31,8 +25,7 @@ _axios.interceptors.request.use(function (config) {
 _axios.interceptors.response.use(function (response) {
     // 对响应数据做点什么
     // console.log(response)
-    // removePending(response.config);
-    
+    // removePending(response.config);  
     return response
 }, function (error) {
     console.log(error.response)
@@ -47,8 +40,7 @@ _axios.interceptors.response.use(function (response) {
         ).then(() => {
             window.location.href = '/';
         })
-    }
-    
+    }   
     return Promise.reject(error)
 })
 export default _axios;
