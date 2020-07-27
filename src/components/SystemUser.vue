@@ -16,7 +16,7 @@
                             width="120">
                             <template slot-scope="{$index,row}">
                                 <span v-if="!editUserPwd[$index]">{{row.password}}</span>
-                                <el-input @blur="updatePwd(row.password)" @keyup.enter.native='updatePwd(row.password)' v-if='editUserPwd[$index]' show-password v-model="row.password"  placeholder="请输入6位数密码"></el-input>
+                                <el-input :maxlength="6" @blur="updatePwd(row.password)" @keyup.enter.native='updatePwd(row.password)' v-if='editUserPwd[$index]' show-password v-model="row.password"  placeholder="请输入6位数密码"></el-input>
                             </template>
                                 
                         </el-table-column>

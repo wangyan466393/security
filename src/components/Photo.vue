@@ -251,7 +251,7 @@ export default {
             var token = response.data.result.token;
             axios({
               method: "POST",
-              async:false,
+              // async:false,
               url:
                 `${that.aiPlatform.host}/apicore/cv/object-recognition/1.6?token=` +
                 token,
@@ -274,6 +274,7 @@ export default {
                       axios({
                         method: "POST",
                         url: that.aiPlatform.host + "/online-authorize",
+                        // async:false,
                         data: JSON.stringify({
                           accesskey: that.accesskey,
                           secretkey: that.secretkey
@@ -283,6 +284,7 @@ export default {
                           var token = response.data.result.token;
                           axios({
                             method: "POST",
+                            // async:false,
                             url:
                               `${that.aiPlatform.host}/apicore/cv/face-identification/1.7?token=` +
                               token,
@@ -295,6 +297,7 @@ export default {
                               "Content-Type": "application/json"
                             }
                           }).then(function(response) {
+                            that.fullscreenLoading = false;
                             // console.log(response)
                             if (response.data.status == 0) {
                               let results =
@@ -312,11 +315,11 @@ export default {
                                 that.personId = results[0].personId;
                                 // that.photo_imgSrc = that.imgSrc;
                                 that.emitScaped(); //父组件需要的数据
-                                that.fullscreenLoading = false;
+                                
                                 clearInterval(that.timer);
                                 that.timer = null;
                                 
-                                // that.timer = setInterval(that.setImage,5000);
+                                that.timer = setInterval(that.setImage,5000);
                                 return;
                               } 
                             }
@@ -325,6 +328,7 @@ export default {
                       });
                     } else if (pre[j] == "vehicle" || pre[j] == "car") {
                       console.log("汽车");
+                      that.fullscreenLoading = true;
                       let base64C = that.base64Code
                       // var data = qs.stringify({
                       //       car_img: base64C,
@@ -344,12 +348,13 @@ export default {
                           }
                         )
                         .then(function(response) {
-                          debugger;
                           console.log(response.data);  
+                          that.fullscreenLoading = false;
                             if (response.data.length>0) {
                               that.stolen_car = response.data;
                               that.emitStolenCar()
-                               that.fullscreenLoading = false;
+                            }else{
+                              that.$message('不是被偷车辆！');
                             }
                         })
                     }
@@ -383,7 +388,9 @@ export default {
         that.imgSrc = e.target.result;
         that.base64Code = e.target.result.split(",")[1];
         if (that.base64Code) {
-           that.objIdentification();
+           clearInterval(that.timer);
+          that.timer = null;
+          that.objIdentification();
         }
       };
     }
@@ -391,10 +398,10 @@ export default {
   created(){
     this.usertoken = window.localStorage.getItem("userToken")
   },
-  // mounted() {
-  //   //定时拍照
-  //  this.timer = setInterval(this.setImage,1000);
-  // },
+  mounted() {
+    //定时拍照
+   this.timer = setInterval(this.setImage,1000);
+  },
   watch: {
     posAddr(a) {
       this.posAddr = a;

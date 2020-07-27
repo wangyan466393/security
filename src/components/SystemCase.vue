@@ -18,7 +18,7 @@
                 />
               </template>
             </el-table-column>
-            <el-table-column prop="identity_id" label="身份证号" width="160"></el-table-column>
+            <el-table-column prop="identity_id" label="身份证号" width="165"></el-table-column>
             <el-table-column prop="case_type" label="案件类型" width="100"></el-table-column>
             <el-table-column prop="escape_time" label="逃离时间" width="180" :formatter="formatDate"></el-table-column>
             <el-table-column label="当前状态" width="110">
